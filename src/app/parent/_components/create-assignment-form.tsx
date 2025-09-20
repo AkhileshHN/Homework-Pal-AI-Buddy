@@ -54,9 +54,14 @@ export function CreateAssignmentForm() {
             <Textarea
               id="description"
               name="description"
-              placeholder="e.g., Solve 5 addition problems."
+              placeholder="e.g., Solve 5 addition problems, or learn a rhyme like 'Twinkle Twinkle Little Star'."
             />
             {state?.error?.description && <p className="text-sm text-destructive">{state.error.description[0]}</p>}
+          </div>
+           <div className="space-y-2">
+            <Label htmlFor="stars">Stars Awarded on Completion</Label>
+            <Input id="stars" name="stars" type="number" min="1" defaultValue="1" />
+            {state?.error?.stars && <p className="text-sm text-destructive">{state.error.stars[0]}</p>}
           </div>
           <Button type="submit" disabled={isPending} className="w-full">
             {isPending ? <LoaderCircle className="animate-spin" /> : 'Create Quest'}

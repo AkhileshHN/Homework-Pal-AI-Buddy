@@ -1,13 +1,6 @@
 {
   "assignments": [
     {
-      "id": "1758353878635",
-      "title": "Learning 2 digit addition",
-      "description": "2+2\r\n4+6\r\n2+1\r\n7+9\r\n1+4",
-      "createdAt": "2025-09-20T07:37:58.635Z",
-      "status": "completed"
-    },
-    {
       "id": "1758354608763",
       "title": "Rhymes",
       "description": "Make the kid learn twinkle twinke litte star rhymes",
