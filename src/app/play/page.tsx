@@ -52,7 +52,6 @@ export default async function PlayPage() {
                     <Gamepad2 className="w-6 h-6 text-primary"/>
                     {assignment.title}
                 </CardTitle>
-                <CardDescription>{assignment.description}</CardDescription>
               </CardHeader>
               <CardContent>
                 <Button asChild className="w-full">
