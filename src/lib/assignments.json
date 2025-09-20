@@ -1,3 +1,12 @@
 {
-  "assignments": []
+  "assignments": [
+    {
+      "id": "1758356173826",
+      "title": "Math Detective: Addition",
+      "description": "##LEARNING##\nAddition means putting numbers together to find a total. When you add, the number gets bigger! For example, if you have 3 apples and someone gives you 2 more, you add them: 3 + 2 = 5 apples. Let's practice adding numbers up to 10!\n\n##QUIZ##\n1. What is 1 + 2?2. What is 4 + 3?3. What is 5 + 5?4. What is 6 + 1?5. What is 2 + 7?6. What is 3 + 4?7. What is 8 + 2?",
+      "createdAt": "2025-09-20T08:16:13.826Z",
+      "status": "completed",
+      "stars": 5
+    }
+  ]
 }
