@@ -100,11 +100,14 @@ export async function getHomeworkHelp(
     }
     
     let audio = '';
-    try {
-        const { audio: audioData } = await textToSpeech(output.message);
-        audio = audioData;
-    } catch (error) {
-        console.error("Text to speech failed, returning empty audio.", error);
+    // Only generate audio in production to avoid hitting rate limits in dev
+    if (process.env.NODE_ENV === 'production') {
+        try {
+            const { audio: audioData } = await textToSpeech(output.message);
+            audio = audioData;
+        } catch (error) {
+            console.error("Text to speech failed, returning empty audio.", error);
+        }
     }
 
     return { ...output, audio };
@@ -178,11 +181,14 @@ export async function getGamifiedStory(input: { assignment: string }) {
   try {
     const story = await generateStory({ assignment: validatedFields.data.assignment });
     let audio: TextToSpeechOutput = { audio: '' };
-    if (story.story) {
-        try {
-            audio = await textToSpeech(story.story);
-        } catch (error) {
-            console.error("Text to speech failed for story, returning empty audio.", error);
+    // Only generate audio in production to avoid hitting rate limits in dev
+    if (process.env.NODE_ENV === 'production') {
+        if (story.story) {
+            try {
+                audio = await textToSpeech(story.story);
+            } catch (error) {
+                console.error("Text to speech failed for story, returning empty audio.", error);
+            }
         }
     }
     return {...story, ...audio};
