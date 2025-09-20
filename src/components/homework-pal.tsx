@@ -40,7 +40,7 @@ type Message = {
   content: string;
 };
 
-const initialState: ({ audio: string } & HomeworkBuddyOutput) | { error: string } | null = null;
+const initialState: ({ audio: string; } & HomeworkBuddyOutput) | { error: string } | null = null;
 
 type HomeworkPalProps = {
   initialMessage?: string;
@@ -120,10 +120,14 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
       setConversation((prev) => [...prev, newAiMessage]);
       setCurrentStage(state.stage);
 
-      if (state.message.includes("⭐")) {
-        setStarCount((prev) => prev + (starsToAward || 1));
+      if (state.starsEarned && state.starsEarned > 0) {
+        setStarCount((prev) => prev + state.starsEarned!);
+      }
+
+      if (state.stage === 'REWARD') {
         setIsComplete(true);
       }
+      
       if ("audio" in state && state.audio && audioRef.current) {
         audioRef.current.src = state.audio;
         audioRef.current.play().catch(e => console.error("Audio playback failed:", e));
@@ -227,7 +231,7 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
 
   const getMessageType = (message: Message) => {
     if (message.role === 'user') return 'user';
-    if (message.content.includes("⭐")) {
+    if (currentStage === 'REWARD' && message.id === conversation[conversation.length - 1].id) {
       return 'ai-reward';
     }
     return 'ai-step';
@@ -281,7 +285,7 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
           </div>
         </div>
         <div className="flex items-center gap-4">
-            <div className={cn("animate-star-pop", isComplete && "hidden")}>
+            <div className={cn(isComplete && "hidden")}>
                <StarCounter count={starCount} />
             </div>
              {isComplete && (
@@ -320,7 +324,7 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
                     messageType === "ai-reward" && "bg-accent/80 text-accent-foreground"
                   )}
                 >
-                  {messageType === 'ai-reward' && <Lightbulb className="inline-block mr-2 w-4 h-4" />}
+                  {messageType === 'ai-reward' && <Trophy className="inline-block mr-2 w-4 h-4" />}
                   {msg.content}
                 </div>
                  {messageType === "user" && (
@@ -350,7 +354,7 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
            <div className="w-full text-center p-4">
             <Trophy className="mx-auto w-12 h-12 text-yellow-500" />
             <h3 className="text-xl font-bold mt-2">Congratulations!</h3>
-            <p className="text-muted-foreground mb-4">You've completed the quest and earned {starsToAward} star{starsToAward === 1 ? '' : 's'}! ⭐</p>
+            <p className="text-muted-foreground mb-4">{conversation.length > 0 && conversation[conversation.length - 1].content}</p>
             <div className="flex justify-center gap-4">
                 <Button asChild>
                     <Link href="/play">

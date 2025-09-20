@@ -86,9 +86,8 @@ export async function getHomeworkHelp(
       stars: starsToAward,
     });
     
-    // Don't generate audio for reward messages.
-    if (output.message.includes("⭐")) {
-        // This is the final reward, so mark as completed
+    // If the quest is over, mark it as completed.
+    if (output.stage === 'REWARD') {
         const { assignments } = await getAssignments();
         const assignmentIndex = assignments.findIndex(a => a.id === assignmentId);
         if (assignmentIndex !== -1) {
@@ -97,7 +96,6 @@ export async function getHomeworkHelp(
         }
         revalidatePath('/parent');
         revalidatePath('/play');
-        return { ...output, audio: "" };
     }
     
     let audio = '';
@@ -117,7 +115,8 @@ export async function getHomeworkHelp(
     return {
       message: "Oops! I had a little trouble thinking. Could you please ask your question again?",
       stage: 'QUIZ',
-      audio: ""
+      audio: "",
+      starsEarned: 0
     };
   }
 }
