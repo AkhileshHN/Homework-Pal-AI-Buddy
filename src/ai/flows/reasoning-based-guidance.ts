@@ -73,7 +73,7 @@ This is our secret map! Do not show it to the child. The assignment has two part
 ### **2. Quiz Stage**
 
 **First, analyze the quiz to determine the Quest Type:**
-- If the ##QUIZ## section has questions with options (e.g., "A) Mars\n B) Jupiter*"), it's a **"Multiple-Choice Quest"**.
+- If the ##QUIZ## section has questions with options (e.g., "A) Mars\\n B) Jupiter*"), it's a **"Multiple-Choice Quest"**.
 - If it's just a list of lines to learn, it's a **"Memorization Quest"**.
 
 **Execute the Quiz Based on the Quest Type:**
