@@ -1,8 +1,7 @@
 
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useFormState } from "react-dom";
+import { useEffect, useRef, useState, useActionState } from "react";
 import { getHomeworkHelp } from "@/app/actions";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,10 +27,9 @@ type Message = {
 const initialState: (HomeworkBuddyOutput & { error?: string }) | null = null;
 
 export function HomeworkPal() {
-  const [formState, formAction] = useFormState(getHomeworkHelp, initialState);
+  const [formState, formAction, isPending] = useActionState(getHomeworkHelp, initialState);
   const [conversation, setConversation] = useState<Message[]>([]);
   const [starCount, setStarCount] = useState(0);
-  const [isPending, setIsPending] = useState(false);
   const messageIdCounter = useRef(0);
   const formRef = useRef<HTMLFormElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -39,8 +37,6 @@ export function HomeworkPal() {
 
   useEffect(() => {
     if (!formState) return;
-
-    setIsPending(false);
 
     if (formState.error) {
       toast({
@@ -107,7 +103,6 @@ export function HomeworkPal() {
     const problem = formData.get("problem") as string;
     if (!problem.trim()) return;
 
-    setIsPending(true);
     setConversation((prev) => [
       ...prev,
       { id: messageIdCounter.current++, type: "user", text: problem },
