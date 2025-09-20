@@ -99,7 +99,13 @@ export async function getHomeworkHelp(
         return { ...output, audio: "" };
     }
     
-    const { audio } = await textToSpeech(output.message);
+    let audio = '';
+    try {
+        const { audio: audioData } = await textToSpeech(output.message);
+        audio = audioData;
+    } catch (error) {
+        console.error("Text to speech failed, returning empty audio.", error);
+    }
 
     return { ...output, audio };
   } catch (error) {
@@ -173,7 +179,11 @@ export async function getGamifiedStory(input: { assignment: string }) {
     const story = await generateStory({ assignment: validatedFields.data.assignment });
     let audio: TextToSpeechOutput = { audio: '' };
     if (story.story) {
-        audio = await textToSpeech(story.story);
+        try {
+            audio = await textToSpeech(story.story);
+        } catch (error) {
+            console.error("Text to speech failed for story, returning empty audio.", error);
+        }
     }
     return {...story, ...audio};
   } catch (error) {

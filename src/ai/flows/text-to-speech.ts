@@ -61,28 +61,33 @@ const textToSpeechFlow = ai.defineFlow(
     if (!query) {
       return { audio: '' };
     }
-    const { media } = await ai.generate({
-      model: 'googleai/gemini-2.5-flash-preview-tts',
-      config: {
-        responseModalities: ['AUDIO'],
-        speechConfig: {
-          voiceConfig: {
-            prebuiltVoiceConfig: { voiceName: 'Algenib' },
+    try {
+      const { media } = await ai.generate({
+        model: 'googleai/gemini-2.5-flash-preview-tts',
+        config: {
+          responseModalities: ['AUDIO'],
+          speechConfig: {
+            voiceConfig: {
+              prebuiltVoiceConfig: { voiceName: 'Algenib' },
+            },
           },
         },
-      },
-      prompt: query,
-    });
-    if (!media) {
-      throw new Error('no media returned');
+        prompt: query,
+      });
+      if (!media) {
+        throw new Error('no media returned');
+      }
+      const audioBuffer = Buffer.from(
+        media.url.substring(media.url.indexOf(',') + 1),
+        'base64'
+      );
+      const wavAudio = await toWav(audioBuffer);
+      return {
+        audio: 'data:audio/wav;base64,' + wavAudio,
+      };
+    } catch (error) {
+        console.error("Error in textToSpeechFlow:", error);
+        return { audio: '' };
     }
-    const audioBuffer = Buffer.from(
-      media.url.substring(media.url.indexOf(',') + 1),
-      'base64'
-    );
-    const wavAudio = await toWav(audioBuffer);
-    return {
-      audio: 'data:audio/wav;base64,' + wavAudio,
-    };
   }
 );
