@@ -2,10 +2,10 @@
   "assignments": [
     {
       "id": "1758355342610",
-      "title": "solar system",
-      "description": "1. What is the first planet from the Sun?\n2. Which planet is known as the \"Red Planet\"?\n3. What is the largest planet in our solar system?\n4. Which planet has beautiful, visible rings?\n5. What is the name of the planet we live on?\n6. Which planet is often called Earth's \"sister planet\" and is very hot?\n7. This planet is an \"ice giant\" and spins on its side. What is its name?\n8. What is the most distant planet from the Sun?",
+      "title": "Solar System",
+      "description": "##LEARNING##\nOur solar system has amazing planets! Mercury is closest to the sun, and Neptune is the farthest. Mars is called the Red Planet, and Jupiter is the biggest of all. We live on a beautiful planet called Earth!\n\n##QUIZ##\n1. What is the biggest planet?\n2. Which planet is called the Red Planet?\n3. What is the name of the planet we live on?\n4. Which planet is farthest from the sun?",
       "createdAt": "2025-09-20T08:02:22.610Z",
-      "status": "inprogress",
+      "status": "new",
       "stars": 5
     }
   ]
