@@ -1,3 +1,12 @@
 {
-  "assignments": []
+  "assignments": [
+    {
+      "id": "1758355342610",
+      "title": "solar system",
+      "description": "1. What is the first planet from the Sun?\n2. Which planet is known as the \"Red Planet\"?\n3. What is the largest planet in our solar system?\n4. Which planet has beautiful, visible rings?\n5. What is the name of the planet we live on?\n6. Which planet is often called Earth's \"sister planet\" and is very hot?\n7. This planet is an \"ice giant\" and spins on its side. What is its name?\n8. What is the most distant planet from the Sun?",
+      "createdAt": "2025-09-20T08:02:22.610Z",
+      "status": "inprogress",
+      "stars": 5
+    }
+  ]
 }

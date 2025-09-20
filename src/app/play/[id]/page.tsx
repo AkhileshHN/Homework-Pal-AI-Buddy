@@ -18,7 +18,8 @@ async function getAssignment(id: string): Promise<Assignment | undefined> {
   try {
     const data = await fs.readFile(filePath, 'utf-8');
     if (!data) return undefined;
-    const assignments = JSON.parse(data).assignments || [];
+    const jsonData = JSON.parse(data);
+    const assignments = jsonData.assignments || [];
     return assignments.find((a: Assignment) => a.id === id);
   } catch (error) {
      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
@@ -44,19 +45,20 @@ export default async function PlayAssignmentPage({ params }: { params: { id: str
 
   let story;
   try {
-      story = await getGamifiedStory({ assignment: assignment.description });
+      const learningMaterial = assignment.description.split('##LEARNING##')[1]?.split('##QUIZ##')[0]?.trim() || assignment.title;
+      story = await getGamifiedStory({ assignment: learningMaterial });
   } catch(e) {
       // Fallback if AI story generation fails
       story = {
           title: assignment.title,
-          story: `Let's get started with your assignment: ${assignment.description}. What's the first step?`,
+          story: `Let's get started with your assignment!`,
           audio: ''
       }
   }
 
 
   return (
-    <div className="flex h-screen w-full items-center justify-center p-4">
+    <div className="flex h-[calc(100vh-2rem)] w-full items-center justify-center p-4">
       <HomeworkPal 
         assignmentId={assignment.id}
         assignmentTitle={story.title}
