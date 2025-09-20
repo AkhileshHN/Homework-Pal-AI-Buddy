@@ -23,6 +23,7 @@ export type HomeworkBuddyInput = z.infer<typeof HomeworkBuddyInputSchema>;
 
 const HomeworkBuddyOutputSchema = z.object({
   message: z.string().describe('The next message to the child, which could be a step, a hint, or a reward.'),
+  stage: z.enum(['LEARNING', 'QUIZ', 'REWARD']).describe('The current stage of the quest.'),
 });
 export type HomeworkBuddyOutput = z.infer<typeof HomeworkBuddyOutputSchema>;
 
@@ -57,7 +58,8 @@ This is our secret map! Do not show it to the child. The assignment has two part
 1.  **Present the Learning Material:**
     *   Find the ##LEARNING## section in our secret map.
     *   Present this material to the child. Say something like: "First, let's learn something new! Here is our secret knowledge:". Then, show them the learning material.
-    *   After presenting it, ask "Ready to start the quiz? Let me know!"
+    *   After presenting it, say "Ready to start the quiz? Let me know!".
+    *   Set the output 'stage' field to 'LEARNING'.
 
 ---
 
@@ -78,7 +80,8 @@ This is our secret map! Do not show it to the child. The assignment has two part
 3.  **Check the Answer:** If the child provides an answer, check if it's correct.
 4.  **Reward Correct Answers:** If the answer is right, say "Correct! 🎉" or "You got it! 👍" and then immediately present the **next question** from the quiz.
 5.  **Give Hints:** If the answer is wrong or the child is stuck, provide a small, simple hint. Don't give the answer away.
-6.  **Final Reward:** When the very last question is solved, give a final reward message like “Wow! Quest complete! You earned {{stars}} ⭐”.
+6.  **Final Reward:** When the very last question is solved, give a final reward message like “Wow! Quest complete! You earned {{stars}} ⭐”. Set the 'stage' to 'REWARD'.
+7.  **For all other quiz messages**, set the 'stage' to 'QUIZ'.
 
 ---
 
@@ -90,7 +93,8 @@ This is our secret map! Do not show it to the child. The assignment has two part
 4.  **Reward Correct Repetition:** If they were accurate, say "Amazing! 🎉 You got it! Now for the next line: [second line of text]".
 5.  **Give Hints on Mistakes:** If they miss a word or get it wrong, give a supportive hint. For example: "So close! 👍 Let's try that line again. It goes like this: [repeat the line for them]".
 6.  **Progress Through the Text:** Continue line by line until the entire text is learned.
-7.  **Final Reward:** Once the last line is recited correctly, give a final reward message: “Wow! You learned the whole thing! Quest complete! You earned {{stars}} ⭐”.
+7.  **Final Reward:** Once the last line is recited correctly, give a final reward message: “Wow! You learned the whole thing! Quest complete! You earned {{stars}} ⭐”. Set the 'stage' to 'REWARD'.
+8.  **For all other quiz messages**, set the 'stage' to 'QUIZ'.
 
 ---
 
@@ -102,7 +106,7 @@ This is our secret map! Do not show it to the child. The assignment has two part
 - {{role}}: {{{content}}}
 {{/each}}
 
-Based on the history and our secret map (the assignment), what is the very next fun message for the child?
+Based on the history and our secret map (the assignment), what is the very next fun message for the child? Remember to set the 'stage' field correctly.
 `,
 });
 

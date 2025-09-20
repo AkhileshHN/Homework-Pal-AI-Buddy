@@ -4,6 +4,7 @@
 import {
   homeworkBuddy,
   type HomeworkBuddyInput,
+  HomeworkBuddyOutput,
 } from "@/ai/flows/reasoning-based-guidance";
 import { textToSpeech, TextToSpeechOutput } from "@/ai/flows/text-to-speech";
 import { z } from "zod";
@@ -57,7 +58,7 @@ async function saveAssignments(assignments: any) {
 export async function getHomeworkHelp(
   prevState: any,
   formData: FormData
-): Promise<{ message: string; audio: string; error?: string } | { error: string, message?: undefined, audio?: undefined }> {
+): Promise<({ audio: string; } & HomeworkBuddyOutput) | { error: string }> {
   const historyStr = formData.get("history") as string;
   const assignment = formData.get("assignment") as string;
   const assignmentId = formData.get("assignmentId") as string;
@@ -115,6 +116,7 @@ export async function getHomeworkHelp(
     console.error("Error getting homework help:", error);
     return {
       message: "Oops! I had a little trouble thinking. Could you please ask your question again?",
+      stage: 'QUIZ',
       audio: ""
     };
   }

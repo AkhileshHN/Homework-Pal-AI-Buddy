@@ -32,6 +32,7 @@ import {
   AlertDialogTrigger,
 } from "./ui/alert-dialog";
 import { useRouter } from "next/navigation";
+import type { HomeworkBuddyOutput } from "@/ai/flows/reasoning-based-guidance";
 
 type Message = {
   id: number;
@@ -39,7 +40,7 @@ type Message = {
   content: string;
 };
 
-const initialState: { message?: string; audio?: string; error?: string } | null = null;
+const initialState: ({ audio: string } & HomeworkBuddyOutput) | { error: string } | null = null;
 
 type HomeworkPalProps = {
   initialMessage?: string;
@@ -53,6 +54,7 @@ type HomeworkPalProps = {
 export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, assignmentDescription, assignmentId, starsToAward = 1 }: HomeworkPalProps) {
   const [state, formAction, isPending] = useActionState(getHomeworkHelp, initialState);
   const [conversation, setConversation] = useState<Message[]>([]);
+  const [currentStage, setCurrentStage] = useState<'LEARNING' | 'QUIZ' | 'REWARD'>('LEARNING');
   const [starCount, setStarCount] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
@@ -91,7 +93,7 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
   useEffect(() => {
     if (!state) return;
 
-    if (state.error) {
+    if ("error" in state && state.error) {
       toast({
         title: "Error",
         description: state.error,
@@ -108,7 +110,7 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
       return;
     }
     
-    if (state.message) {
+    if ("message" in state && state.message) {
        const newAiMessage: Message = {
         id: messageIdCounter.current++,
         role: "model",
@@ -116,12 +118,13 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
       };
 
       setConversation((prev) => [...prev, newAiMessage]);
+      setCurrentStage(state.stage);
 
       if (state.message.includes("⭐")) {
         setStarCount((prev) => prev + (starsToAward || 1));
         setIsComplete(true);
       }
-      if (state.audio && audioRef.current) {
+      if ("audio" in state && state.audio && audioRef.current) {
         audioRef.current.src = state.audio;
         audioRef.current.play().catch(e => console.error("Audio playback failed:", e));
       }
@@ -133,6 +136,31 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [conversation]);
+
+  const handleFormSubmit = (formData: FormData) => {
+    const problem = formData.get("problem") as string;
+    if (!problem.trim() && currentStage !== 'LEARNING') return;
+
+    const newUserMessage: Message = {
+      id: messageIdCounter.current++,
+      role: 'user',
+      content: problem || "Let's start the quiz!",
+    };
+    
+    const newConversation = [...conversation, newUserMessage];
+    setConversation(newConversation);
+
+    const historyForAction = newConversation.map(m => ({role: m.role, content: m.content}));
+    
+    const newFormData = new FormData();
+    newFormData.append('history', JSON.stringify(historyForAction));
+    newFormData.append('assignmentId', assignmentId);
+    newFormData.append('starsToAward', String(starsToAward));
+    if (assignmentDescription) {
+        newFormData.append('assignment', assignmentDescription);
+    }
+    formAction(newFormData);
+  }
 
   const handleMicClick = () => {
     if (!speechRecognition) {
@@ -335,64 +363,49 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
         ) : (
         <form
           ref={formRef}
-          action={(formData) => {
-            const problem = formData.get("problem") as string;
-            if (!problem.trim()) return;
-
-            const newUserMessage: Message = {
-              id: messageIdCounter.current++,
-              role: 'user',
-              content: problem
-            };
-            
-            const newConversation = [...conversation, newUserMessage];
-            setConversation(newConversation);
-
-            const historyForAction = newConversation.map(m => ({role: m.role, content: m.content}));
-            
-            const newFormData = new FormData();
-            newFormData.append('history', JSON.stringify(historyForAction));
-            newFormData.append('assignmentId', assignmentId);
-            newFormData.append('starsToAward', String(starsToAward));
-            if (assignmentDescription) {
-                newFormData.append('assignment', assignmentDescription);
-            }
-            formAction(newFormData);
-          }}
+          action={handleFormSubmit}
           className="flex items-center w-full gap-2"
         >
-          <Textarea
-            suppressHydrationWarning
-            name="problem"
-            placeholder={"What is your answer?"}
-            className="flex-1 resize-none bg-background text-base"
-            rows={1}
-            disabled={isPending}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                formRef.current?.requestSubmit();
-              }
-            }}
-          />
-           <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button type="button" size="icon" variant="ghost" onClick={handleMicClick} disabled={isPending || !speechRecognition}>
-                    <Mic className="w-5 h-5" />
-                    {isRecording && <span className="absolute top-1 right-1 block h-2 w-2 rounded-full bg-red-500 animate-pulse" />}
-                    <span className="sr-only">Use microphone</span>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                {speechRecognition ? (isRecording ? 'Stop recording' : 'Start recording') : 'Voice recognition not supported'}
-              </TooltipContent>
-            </Tooltip>
-           </TooltipProvider>
-          <Button type="submit" size="icon" disabled={isPending}>
-            {isPending ? <LoaderCircle className="w-5 h-5 animate-spin"/> : <Send className="w-5 h-5" />}
-            <span className="sr-only">Send message</span>
-          </Button>
+          {currentStage === 'LEARNING' ? (
+             <Button type="submit" className="w-full" disabled={isPending}>
+                {isPending ? <LoaderCircle className="animate-spin" /> : 'Start Quiz!'}
+             </Button>
+          ) : (
+            <>
+              <Textarea
+                suppressHydrationWarning
+                name="problem"
+                placeholder={"What is your answer?"}
+                className="flex-1 resize-none bg-background text-base"
+                rows={1}
+                disabled={isPending}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    formRef.current?.requestSubmit();
+                  }
+                }}
+              />
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button type="button" size="icon" variant="ghost" onClick={handleMicClick} disabled={isPending || !speechRecognition}>
+                        <Mic className="w-5 h-5" />
+                        {isRecording && <span className="absolute top-1 right-1 block h-2 w-2 rounded-full bg-red-500 animate-pulse" />}
+                        <span className="sr-only">Use microphone</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {speechRecognition ? (isRecording ? 'Stop recording' : 'Start recording') : 'Voice recognition not supported'}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <Button type="submit" size="icon" disabled={isPending}>
+                {isPending ? <LoaderCircle className="w-5 h-5 animate-spin"/> : <Send className="w-5 h-5" />}
+                <span className="sr-only">Send message</span>
+              </Button>
+            </>
+          )}
         </form>
         )}
       </CardFooter>
