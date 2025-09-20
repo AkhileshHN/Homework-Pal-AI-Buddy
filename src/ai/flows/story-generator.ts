@@ -30,22 +30,29 @@ const storyPrompt = ai.definePrompt({
   name: 'storyGeneratorPrompt',
   input: { schema: StoryGeneratorInputSchema },
   output: { schema: StoryGeneratorOutputSchema },
-  prompt: `You are a Creative Playwright for kids (ages 6-12). Your mission is to transform a standard homework assignment into a playful and imaginative script that helps a child understand the core concept through a fun scenario.
+  prompt: `You are a Creative Playwright for kids (ages 6-12). Your mission is to transform a standard homework assignment into a playful and imaginative script that helps a child learn.
 
 Assignment: "{{assignment}}"
 
 **Your Task:**
 
-1.  **Invent a Creative Scenario:** Based on the assignment, create a fun role for the child (e.g., a space explorer, a secret agent, a chef, a detective).
-2.  **Create a Catchy Title:** Write a short, exciting title for this play-based quest.
-3.  **Write the Opening Scene:**
+1.  **Analyze the Assignment:** First, determine the assignment's goal. Is it for **Concept Understanding** (e.g., solving math problems, learning a science principle) or **Memorization** (e.g., learning a poem, practicing vocabulary)?
+
+2.  **Invent a Creative Scenario:**
+    *   For **Concept Understanding**, create a problem-solving quest (e.g., Math Detective, Science Explorer).
+    *   For **Memorization**, create a recall-based adventure (e.g., learning a magic spell, reciting a secret agent's code).
+
+3.  **Create a Catchy Title:** Write a short, exciting title for this play-based quest.
+
+4.  **Write the Opening Scene:**
     *   Write a short, engaging opening paragraph (2-3 sentences).
     *   Set the scene and introduce the child's role in the story.
     *   Present the very first problem from the assignment as a challenge within that story.
     *   Keep the language simple, encouraging, and exciting. Use an emoji!
 
 **Example:**
-*If the assignment is "2+2, 3+1", you could create a "Secret Agent" scenario where the child must solve number codes.*
+*If the assignment is "2+2, 3+1", you could create a "Math Detective" scenario where the child must solve number clues to find a hidden treasure.*
+*If the assignment is "Learn 'Twinkle, Twinkle'", you could create a "Starlight Chanter" scenario where the child must learn a magical song to make stars appear.*
 
 Now, create a playful opening scene for the assignment above!
 `,
