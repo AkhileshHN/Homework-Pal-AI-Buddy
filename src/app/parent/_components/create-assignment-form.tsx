@@ -52,7 +52,6 @@ export function CreateAssignmentForm() {
           <div className="space-y-2">
             <Label htmlFor="description">Assignment Description</Label>
             <Textarea
-              suppressHydrationWarning
               id="description"
               name="description"
               placeholder="e.g., Solve 5 addition problems."

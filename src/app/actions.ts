@@ -10,6 +10,7 @@ import { z } from "zod";
 import { promises as fs } from 'fs';
 import path from 'path';
 import { generateStory, type StoryGeneratorInput } from "@/ai/flows/story-generator";
+import { revalidatePath } from "next/cache";
 
 const inputSchema = z.object({
   assignment: z.string(),
@@ -85,6 +86,7 @@ export async function getHomeworkHelp(
           assignments[assignmentIndex].status = 'completed';
           await saveAssignments({ assignments });
         }
+        revalidatePath('/parent');
         return { ...output, audio: "" };
     }
     
@@ -130,6 +132,7 @@ export async function createAssignment(prevState: any, formData: FormData) {
     };
     data.assignments.push(newAssignment);
     await saveAssignments(data);
+    revalidatePath('/parent');
     return { success: true };
   } catch (error) {
     console.error('Failed to create assignment:', error);
@@ -169,9 +172,23 @@ export async function updateAssignmentStatus(id: string, status: 'new' | 'inprog
             if (assignments[assignmentIndex].status === 'completed') return; // Don't change a completed quest
             assignments[assignmentIndex].status = status;
             await saveAssignments({ assignments });
+            revalidatePath('/parent');
         }
     } catch(error) {
         console.error("Failed to update assignment status", error);
         // We don't need to throw here, as it's not critical for the user flow
+    }
+}
+
+export async function deleteAssignment(id: string) {
+    try {
+        const { assignments } = await getAssignments();
+        const updatedAssignments = assignments.filter((a) => a.id !== id);
+        await saveAssignments({ assignments: updatedAssignments });
+        revalidatePath('/parent');
+        return { success: true };
+    } catch (error) {
+        console.error('Failed to delete assignment:', error);
+        return { error: 'Failed to delete assignment.' };
     }
 }

@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { List, BookCheck, CheckCheck, LoaderCircle } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { DeleteAssignmentButton } from './_components/delete-assignment-button';
 
 type Assignment = {
   id: string;
@@ -90,12 +91,15 @@ export default async function ParentPage() {
                                         Created on: {new Date(assignment.createdAt).toLocaleDateString()}
                                     </p>
                                 </div>
-                                <Button asChild variant={assignment.status === 'completed' ? 'outline' : 'secondary'} size="sm" disabled={assignment.status === 'completed'}>
-                                    <Link href={`/play/${assignment.id}`}>
-                                        <StatusIcon status={assignment.status} />
-                                        {assignment.status === 'completed' ? 'Completed' : (assignment.status === 'inprogress' ? 'In Progress' : 'Start Quest')}
-                                    </Link>
-                                </Button>
+                                <div className="flex items-center gap-2">
+                                    <Button asChild variant={assignment.status === 'completed' ? 'outline' : 'secondary'} size="sm" disabled={assignment.status === 'completed'}>
+                                        <Link href={`/play/${assignment.id}`}>
+                                            <StatusIcon status={assignment.status} />
+                                            {assignment.status === 'completed' ? 'Completed' : (assignment.status === 'inprogress' ? 'In Progress' : 'Start Quest')}
+                                        </Link>
+                                    </Button>
+                                    <DeleteAssignmentButton id={assignment.id} />
+                                </div>
                             </li>
                         ))}
                         </ul>
