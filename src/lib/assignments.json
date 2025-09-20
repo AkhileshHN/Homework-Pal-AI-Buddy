@@ -1,12 +1,12 @@
 {
   "assignments": [
     {
-      "id": "1758355342610",
-      "title": "Solar System",
-      "description": "##LEARNING##\nOur solar system has amazing planets! Mercury is closest to the sun, and Neptune is the farthest. Mars is called the Red Planet, and Jupiter is the biggest of all. We live on a beautiful planet called Earth!\n\n##QUIZ##\n1. What is the biggest planet?\n2. Which planet is called the Red Planet?\n3. What is the name of the planet we live on?\n4. Which planet is farthest from the sun?",
-      "createdAt": "2025-09-20T08:02:22.610Z",
+      "id": "1758355818945",
+      "title": "Math Detective: Addition",
+      "description": "##LEARNING##\nAddition is when you put two or more numbers together to find a total. It's like counting how many things you have in total when you combine them. For example, if you have 2 apples and get 3 more, you add them: 2 + 3 = 5 apples!\n\n##QUIZ##\n1. What is 3 + 2?\n2. What is 5 + 4?\n3. What is 1 + 6?\n4. What is 7 + 3?",
+      "createdAt": "2025-09-20T08:10:18.945Z",
       "status": "inprogress",
-      "stars": 5
+      "stars": 4
     }
   ]
 }
