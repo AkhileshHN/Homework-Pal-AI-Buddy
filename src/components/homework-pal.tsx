@@ -50,17 +50,13 @@ type HomeworkPalProps = {
   starsToAward?: number;
 };
 
-// Check for SpeechRecognition API
-const SpeechRecognition =
-  typeof window !== 'undefined' ? (window.SpeechRecognition || window.webkitSpeechRecognition) : null;
-
-
 export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, assignmentDescription, assignmentId, starsToAward = 1 }: HomeworkPalProps) {
   const [state, formAction, isPending] = useActionState(getHomeworkHelp, initialState);
   const [conversation, setConversation] = useState<Message[]>([]);
   const [starCount, setStarCount] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [speechRecognition, setSpeechRecognition] = useState<any>(null);
   
   const router = useRouter();
   const messageIdCounter = useRef(0);
@@ -68,7 +64,13 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const audioRef = useRef<HTMLAudioElement>(null);
-  const recognitionRef = useRef<any>(null); // Using 'any' for cross-browser compatibility
+  const recognitionRef = useRef<any>(null);
+
+  useEffect(() => {
+    // Check for SpeechRecognition API on the client after mount
+    const recognitionApi = window.SpeechRecognition || window.webkitSpeechRecognition;
+    setSpeechRecognition(() => recognitionApi);
+  }, []);
 
   useEffect(() => {
     if (initialMessage && conversation.length === 0) {
@@ -133,7 +135,7 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
   }, [conversation]);
 
   const handleMicClick = () => {
-    if (!SpeechRecognition) {
+    if (!speechRecognition) {
         toast({
             title: "Browser Not Supported",
             description: "Your browser doesn't support voice recognition.",
@@ -148,7 +150,7 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
         return;
     }
 
-    recognitionRef.current = new SpeechRecognition();
+    recognitionRef.current = new speechRecognition();
     recognitionRef.current.lang = 'en-US';
     recognitionRef.current.interimResults = false;
     recognitionRef.current.maxAlternatives = 1;
@@ -359,14 +361,14 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
            <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button type="button" size="icon" variant="ghost" onClick={handleMicClick} disabled={isPending || isComplete || !SpeechRecognition}>
+                <Button type="button" size="icon" variant="ghost" onClick={handleMicClick} disabled={isPending || isComplete || !speechRecognition}>
                     <Mic className="w-5 h-5" />
                     {isRecording && <span className="absolute top-1 right-1 block h-2 w-2 rounded-full bg-red-500 animate-pulse" />}
                     <span className="sr-only">Use microphone</span>
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                {SpeechRecognition ? (isRecording ? 'Stop recording' : 'Start recording') : 'Voice recognition not supported'}
+                {speechRecognition ? (isRecording ? 'Stop recording' : 'Start recording') : 'Voice recognition not supported'}
               </TooltipContent>
             </Tooltip>
            </TooltipProvider>
