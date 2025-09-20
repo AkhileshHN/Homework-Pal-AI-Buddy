@@ -138,8 +138,11 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
   }, [conversation]);
 
   const handleFormSubmit = (formData: FormData) => {
-    const problem = formData.get("problem") as string;
-    if (!problem.trim() && currentStage !== 'LEARNING') return;
+    const problem = formData.get("problem") as string | null;
+
+    if (currentStage !== 'LEARNING' && (!problem || !problem.trim())) {
+      return;
+    }
 
     const newUserMessage: Message = {
       id: messageIdCounter.current++,
