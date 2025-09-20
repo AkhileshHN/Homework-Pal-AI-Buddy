@@ -65,6 +65,7 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
   const router = useRouter();
   const messageIdCounter = useRef(0);
   const formRef = useRef<HTMLFormElement>(null);
+  const hiddenInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -174,10 +175,9 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
   }
 
   const handleQuizOptionClick = (option: string) => {
-      const problemTextarea = formRef.current?.elements.namedItem("problem") as HTMLTextAreaElement;
-      if(problemTextarea) {
-          problemTextarea.value = option;
-          formRef.current?.requestSubmit();
+      if (hiddenInputRef.current) {
+        hiddenInputRef.current.value = option;
+        formRef.current?.requestSubmit();
       }
   }
 
@@ -222,9 +222,8 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
 
     recognitionRef.current.onresult = (event: any) => {
         const transcript = event.results[0][0].transcript;
-        const problemTextarea = formRef.current?.elements.namedItem("problem") as HTMLTextAreaElement;
-        if(problemTextarea) {
-            problemTextarea.value = transcript;
+        if (hiddenInputRef.current) {
+            hiddenInputRef.current.value = transcript;
             formRef.current?.requestSubmit();
         }
     };
@@ -340,8 +339,8 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
                   )}
                 >
                   {messageType === 'ai-reward' && <Trophy className="inline-block mr-2 w-4 h-4" />}
-                   <p className="font-bold">{msg.quizQuestion}</p>
-                  {msg.content}
+                   <p className="font-bold whitespace-pre-wrap">{msg.quizQuestion}</p>
+                  <p className="whitespace-pre-wrap">{msg.content}</p>
                 </div>
                  {messageType === "user" && (
                    <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center shrink-0">
@@ -370,7 +369,7 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
            <div className="w-full text-center p-4">
             <Trophy className="mx-auto w-12 h-12 text-yellow-500" />
             <h3 className="text-xl font-bold mt-2">Congratulations!</h3>
-            <p className="text-muted-foreground mb-4">{conversation.length > 0 && conversation[conversation.length - 1].content}</p>
+            <p className="text-muted-foreground mb-4 whitespace-pre-wrap">{conversation.length > 0 && conversation[conversation.length - 1].content}</p>
             <div className="flex justify-center gap-4">
                 <Button asChild>
                     <Link href="/play">
@@ -386,28 +385,32 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
         ) : (
         <form
           ref={formRef}
-          action={handleFormSubmit}
+          action={(formData) => handleFormSubmit(formData)}
           className="flex items-center w-full gap-2"
         >
+           <input type="hidden" name="problem" ref={hiddenInputRef} />
           {currentStage === 'LEARNING' ? (
              <Button type="submit" className="w-full" disabled={isPending}>
                 {isPending ? <LoaderCircle className="animate-spin" /> : 'Start Quiz!'}
              </Button>
           ) : showQuizOptions ? (
-             <div className="w-full grid grid-cols-2 gap-3">
-                {lastMessage.quizOptions?.map((option, index) => (
+             <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-3">
+                {lastMessage.quizOptions?.map((option, index) => {
+                  const isSkipButton = option.toLowerCase().includes('skip');
+                  return (
                     <Button
                         key={index}
                         type="button"
-                        variant="outline"
-                        className="h-auto py-3 text-base justify-start"
+                        variant={isSkipButton ? "secondary" : "outline"}
+                        className={cn("h-auto py-3 text-base justify-start text-left", isSkipButton && "md:col-span-2")}
                         onClick={() => handleQuizOptionClick(option)}
                         disabled={isPending}
                     >
-                        <span className="text-primary mr-2 font-bold">{String.fromCharCode(65 + index)}:</span>
+                        {!isSkipButton && <span className="text-primary mr-2 font-bold">{String.fromCharCode(65 + index)}:</span>}
                         {option}
                     </Button>
-                ))}
+                  )
+                })}
              </div>
           ) : (
             <>
@@ -421,7 +424,10 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
-                    formRef.current?.requestSubmit();
+                    if(formRef.current) {
+                      hiddenInputRef.current!.value = (e.target as HTMLTextAreaElement).value;
+                      formRef.current.requestSubmit();
+                    }
                   }
                 }}
               />
@@ -439,7 +445,14 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
-              <Button type="submit" size="icon" disabled={isPending}>
+              <Button type="submit" size="icon" disabled={isPending} onClick={() => {
+                if (formRef.current) {
+                    const textarea = formRef.current.querySelector('textarea[name="problem"]');
+                    if (textarea) {
+                      hiddenInputRef.current!.value = (textarea as HTMLTextAreaElement).value;
+                    }
+                }
+              }}>
                 {isPending ? <LoaderCircle className="w-5 h-5 animate-spin"/> : <Send className="w-5 h-5" />}
                 <span className="sr-only">Send message</span>
               </Button>

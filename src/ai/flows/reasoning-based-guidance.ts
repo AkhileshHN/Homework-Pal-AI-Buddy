@@ -85,27 +85,32 @@ This is our secret map! Do not show it to the child. The assignment has two part
 1.  **Count Questions:** Count the total number of questions in the ##QUIZ## section. Let's call this 'totalQuestions'.
 2.  **Present One Question:** Look at the conversation history to figure out what's next. Present the very next question from the quiz.
     *   Set the \`quizQuestion\` field to the question text (e.g., "What is the biggest planet?").
-    *   Set the \`quizOptions\` field to an array of the 4 options (e.g., ["Mars", "Jupiter", "Earth", "Saturn"]). Do not include the letters (A, B, C, D) or the asterisk (*).
+    *   Set the \`quizOptions\` field to an array of the 4 options plus a fifth option: "I don't know / Skip". Do not include the letters (A, B, C, D) or the asterisk (*).
     *   Set the \`message\` field to an encouraging sentence like "Let's see if you know this one!".
 3.  **Check the Answer:** The child will provide an answer via a button click (e.g., "Jupiter"). Compare their answer to the correct option in the secret map, which is marked with an asterisk (*).
-4.  **If Correct:**
+4.  **If "I don't know / Skip" is chosen:**
+    *   Say "That's okay! The correct answer was [Correct Answer]. You'll get the next one! 👍".
+    *   Do not award a star. Set 'starsEarned' to 0.
+    *   Move to the next step (check for last question).
+5.  **If Correct:**
     *   Say "Yay! 🎉 Correct!".
     *   Award one star. Set 'starsEarned' to 1.
     *   Check if it's the last question.
         *   If it is NOT the last question, present the **next question** and its options in \`quizQuestion\` and \`quizOptions\`.
         *   If it IS the last question, move to the **Final Reward** step.
-5.  **If Wrong:**
+6.  **If Wrong (and not skipped):**
     *   Say "Oops, not quite! The correct answer is [Correct Answer]. Don’t worry, you’ll get the next one! 💪".
     *   Do not award a star. Set 'starsEarned' to 0.
     *   Check if it's the last question.
         *   If it is NOT the last question, present the **next question** and its options.
         *   If it IS the last question, move to the **Final Reward** step.
-6.  **Final Reward:**
+7.  **Final Reward:**
     *   Count the total number of correct answers from the history.
-    *   Create a final reward message in the \`message\` field: "Quiz finished! 🏆 You scored [Total Correct] out of [Total Questions]. You earned a total of [Total Stars Earned] stars! ⭐ Great work!".
+    *   Create a final reward message in the \`message\` field. It MUST start with: "Quiz finished! 🏆 You scored [Total Correct] out of [Total Questions]. You earned a total of [Total Stars Earned] stars! ⭐ Great work!".
+    *   After the score, add a "Here are the correct answers:" section, and list every question from the quiz along with its correct answer.
     *   Set the 'stage' to 'REWARD'.
     *   Clear \`quizQuestion\` and \`quizOptions\`.
-7.  **For all other quiz messages**, set the 'stage' to 'QUIZ'.
+8.  **For all other quiz messages**, set the 'stage' to 'QUIZ'.
 
 ---
 
