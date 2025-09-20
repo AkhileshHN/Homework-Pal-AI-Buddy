@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
-import { Bot, Mic, Send, Star, User, LoaderCircle, Lightbulb, X, CheckCheck } from "lucide-react";
+import { Bot, Mic, Send, Star, User, LoaderCircle, Lightbulb, X, CheckCheck, Trophy, Home } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PalAvatar } from "./icons";
 import { useToast } from "@/hooks/use-toast";
@@ -315,10 +315,27 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
         </ScrollArea>
       </CardContent>
       <CardFooter className="p-4 border-t bg-card/80 backdrop-blur-sm">
+        {isComplete ? (
+           <div className="w-full text-center p-4">
+            <Trophy className="mx-auto w-12 h-12 text-yellow-500" />
+            <h3 className="text-xl font-bold mt-2">Congratulations!</h3>
+            <p className="text-muted-foreground mb-4">You've completed the quest and earned {starsToAward} star{starsToAward === 1 ? '' : 's'}! ⭐</p>
+            <div className="flex justify-center gap-4">
+                <Button asChild>
+                    <Link href="/play">
+                        <Home className="mr-2 h-4 w-4" />
+                        Choose a New Quest
+                    </Link>
+                </Button>
+                 <Button asChild variant="outline">
+                    <Link href="/parent">Parent Dashboard</Link>
+                </Button>
+            </div>
+           </div>
+        ) : (
         <form
           ref={formRef}
           action={(formData) => {
-            if (isComplete) return;
             const problem = formData.get("problem") as string;
             if (!problem.trim()) return;
 
@@ -347,10 +364,10 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
           <Textarea
             suppressHydrationWarning
             name="problem"
-            placeholder={isComplete ? "You finished this quest!" : "What is your answer?"}
+            placeholder={"What is your answer?"}
             className="flex-1 resize-none bg-background text-base"
             rows={1}
-            disabled={isPending || isComplete}
+            disabled={isPending}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
@@ -361,7 +378,7 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
            <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button type="button" size="icon" variant="ghost" onClick={handleMicClick} disabled={isPending || isComplete || !speechRecognition}>
+                <Button type="button" size="icon" variant="ghost" onClick={handleMicClick} disabled={isPending || !speechRecognition}>
                     <Mic className="w-5 h-5" />
                     {isRecording && <span className="absolute top-1 right-1 block h-2 w-2 rounded-full bg-red-500 animate-pulse" />}
                     <span className="sr-only">Use microphone</span>
@@ -372,15 +389,14 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
               </TooltipContent>
             </Tooltip>
            </TooltipProvider>
-          <Button type="submit" size="icon" disabled={isPending || isComplete}>
+          <Button type="submit" size="icon" disabled={isPending}>
             {isPending ? <LoaderCircle className="w-5 h-5 animate-spin"/> : <Send className="w-5 h-5" />}
             <span className="sr-only">Send message</span>
           </Button>
         </form>
+        )}
       </CardFooter>
       <audio ref={audioRef} className="hidden" />
     </Card>
   );
 }
-
-    
