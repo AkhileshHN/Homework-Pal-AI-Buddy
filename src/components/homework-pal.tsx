@@ -29,11 +29,12 @@ const initialState: { message?: string; audio?: string; error?: string } | null 
 
 type HomeworkPalProps = {
   initialMessage?: string;
+  initialAudio?: string;
   assignmentTitle?: string;
 };
 
 
-export function HomeworkPal({ initialMessage, assignmentTitle }: HomeworkPalProps) {
+export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle }: HomeworkPalProps) {
   const [state, formAction, isPending] = useActionState(getHomeworkHelp, initialState);
   const [conversation, setConversation] = useState<Message[]>([]);
   const [starCount, setStarCount] = useState(0);
@@ -51,14 +52,12 @@ export function HomeworkPal({ initialMessage, assignmentTitle }: HomeworkPalProp
         content: initialMessage,
       };
       setConversation([firstMessage]);
-       if (audioRef.current) {
-        // This is a bit of a hack to play the initial message
-        // A better way would be to get the audio from the server as well
-        const utterance = new SpeechSynthesisUtterance(initialMessage);
-        speechSynthesis.speak(utterance);
+       if (initialAudio && audioRef.current) {
+        audioRef.current.src = initialAudio;
+        audioRef.current.play().catch(e => console.error("Audio playback failed:", e));
       }
     }
-  }, [initialMessage, conversation.length]);
+  }, [initialMessage, initialAudio, conversation.length]);
 
 
   useEffect(() => {

@@ -39,7 +39,8 @@ export default async function PlayAssignmentPage({ params }: { params: { id: str
       // Fallback if AI story generation fails
       story = {
           title: assignment.title,
-          story: `Let's get started with your assignment: ${assignment.description}. What's the first step?`
+          story: `Let's get started with your assignment: ${assignment.description}. What's the first step?`,
+          audio: ''
       }
   }
 
@@ -49,6 +50,7 @@ export default async function PlayAssignmentPage({ params }: { params: { id: str
       <HomeworkPal 
         assignmentTitle={story.title}
         initialMessage={story.story}
+        initialAudio={story.audio}
       />
     </div>
   );

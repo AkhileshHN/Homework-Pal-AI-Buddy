@@ -5,7 +5,7 @@ import {
   homeworkBuddy,
   type HomeworkBuddyInput,
 } from "@/ai/flows/reasoning-based-guidance";
-import { textToSpeech } from "@/ai/flows/text-to-speech";
+import { textToSpeech, TextToSpeechOutput } from "@/ai/flows/text-to-speech";
 import { z } from "zod";
 import { promises as fs } from 'fs';
 import path from 'path';
@@ -127,7 +127,11 @@ export async function getGamifiedStory(input: { assignment: string }) {
 
   try {
     const story = await generateStory({ assignment: validatedFields.data.assignment });
-    return story;
+    let audio: TextToSpeechOutput = { audio: '' };
+    if (story.story) {
+        audio = await textToSpeech(story.story);
+    }
+    return {...story, ...audio};
   } catch (error) {
     console.error("Error generating story:", error);
     throw new Error("Could not generate a story for the assignment.");
