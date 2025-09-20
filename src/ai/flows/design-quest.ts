@@ -31,7 +31,7 @@ const designQuestPrompt = ai.definePrompt({
   input: { schema: DesignQuestInputSchema },
   output: { schema: z.object({
     learning_material: z.string().optional().describe("A short, simple paragraph explaining the concept. If the assignment is for memorization, this should be the full text to memorize. If the description is a topic, generate a short learning paragraph about it."),
-    quiz: z.string().describe("A numbered list of 3-5 simple questions or problems based on the learning material. Each question should be on a new line."),
+    quiz: z.string().describe("A numbered list of 5-10 simple questions or problems based on the learning material. Each question should be on a new line."),
   }) },
   prompt: `You are a curriculum designer for a children's game. Your job is to take a high-level goal from a parent or teacher and turn it into a concrete, two-part quest for a child (ages 6-12).
 
@@ -49,7 +49,7 @@ Assignment Description: "{{description}}"
         *   For **Concept Understanding**, write a short, simple paragraph (2-4 sentences) that explains the core idea. Use very simple language. If the description is just a topic (e.g., "solar system"), create a simple educational paragraph about it.
         *   For **Memorization**, provide the full text of the piece to be memorized (like a poem or rhyme).
     *   **Quiz:**
-        *   Create a numbered list of 3-5 simple questions or problems that test the information from the learning material.
+        *   Create a numbered list of 5-10 simple questions or problems that test the information from the learning material.
         *   For concept tasks, the questions should be direct applications of the concept.
         *   For memorization tasks, the "quiz" will be the child repeating the lines, but you should still format it as a list of lines.
 
@@ -59,7 +59,7 @@ Assignment Description: "{{description}}"
 Description: "Learn about the planets in our solar system."
 Output:
 learning_material: "Our solar system has amazing planets! Mercury is closest to the sun, and Neptune is the farthest. Mars is called the Red Planet, and Jupiter is the biggest of all. We live on a beautiful planet called Earth!"
-quiz: "1. What is the biggest planet?\n2. Which planet is called the Red Planet?\n3. What is the name of the planet we live on?\n4. Which planet is farthest from the sun?"
+quiz: "1. What is the biggest planet?\n2. Which planet is called the Red Planet?\n3. What is the name of the planet we live on?\n4. Which planet is farthest from the sun?\n5. What is the closest planet to the Sun?"
 
 **Example 2 (Memorization):**
 Description: "Learn the 'Hey Diddle Diddle' nursery rhyme."
