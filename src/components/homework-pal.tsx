@@ -38,6 +38,8 @@ type Message = {
   id: number;
   role: "user" | "model";
   content: string;
+  quizQuestion?: string;
+  quizOptions?: string[];
 };
 
 const initialState: ({ audio: string; } & HomeworkBuddyOutput) | { error: string } | null = null;
@@ -115,6 +117,8 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
         id: messageIdCounter.current++,
         role: "model",
         content: state.message,
+        quizQuestion: state.quizQuestion,
+        quizOptions: state.quizOptions,
       };
 
       setConversation((prev) => [...prev, newAiMessage]);
@@ -167,6 +171,14 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
         newFormData.append('assignment', assignmentDescription);
     }
     formAction(newFormData);
+  }
+
+  const handleQuizOptionClick = (option: string) => {
+      const problemTextarea = formRef.current?.elements.namedItem("problem") as HTMLTextAreaElement;
+      if(problemTextarea) {
+          problemTextarea.value = option;
+          formRef.current?.requestSubmit();
+      }
   }
 
   const handleMicClick = () => {
@@ -274,6 +286,9 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
       )
   }
 
+  const lastMessage = conversation[conversation.length - 1];
+  const showQuizOptions = currentStage === 'QUIZ' && lastMessage?.role === 'model' && lastMessage.quizOptions && lastMessage.quizOptions.length > 0;
+
   return (
     <Card className="w-full max-w-2xl mx-auto shadow-2xl rounded-2xl overflow-hidden flex flex-col h-full">
       <CardHeader className="flex flex-row items-center justify-between p-4 border-b bg-card/80 backdrop-blur-sm">
@@ -325,6 +340,7 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
                   )}
                 >
                   {messageType === 'ai-reward' && <Trophy className="inline-block mr-2 w-4 h-4" />}
+                   <p className="font-bold">{msg.quizQuestion}</p>
                   {msg.content}
                 </div>
                  {messageType === "user" && (
@@ -377,6 +393,22 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
              <Button type="submit" className="w-full" disabled={isPending}>
                 {isPending ? <LoaderCircle className="animate-spin" /> : 'Start Quiz!'}
              </Button>
+          ) : showQuizOptions ? (
+             <div className="w-full grid grid-cols-2 gap-3">
+                {lastMessage.quizOptions?.map((option, index) => (
+                    <Button
+                        key={index}
+                        type="button"
+                        variant="outline"
+                        className="h-auto py-3 text-base justify-start"
+                        onClick={() => handleQuizOptionClick(option)}
+                        disabled={isPending}
+                    >
+                        <span className="text-primary mr-2 font-bold">{String.fromCharCode(65 + index)}:</span>
+                        {option}
+                    </Button>
+                ))}
+             </div>
           ) : (
             <>
               <Textarea

@@ -102,7 +102,8 @@ export async function getHomeworkHelp(
     // Only generate audio in production to avoid hitting rate limits in dev
     if (process.env.NODE_ENV === 'production') {
         try {
-            const { audio: audioData } = await textToSpeech(output.message);
+            const audioMessage = output.quizQuestion ? `${output.message} ${output.quizQuestion}` : output.message;
+            const { audio: audioData } = await textToSpeech(audioMessage);
             audio = audioData;
         } catch (error) {
             console.error("Text to speech failed, returning empty audio.", error);
