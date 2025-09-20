@@ -9,14 +9,14 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
+import { z } from 'zod';
 
-export const StoryGeneratorInputSchema = z.object({
+const StoryGeneratorInputSchema = z.object({
   assignment: z.string().describe('The homework assignment description.'),
 });
 export type StoryGeneratorInput = z.infer<typeof StoryGeneratorInputSchema>;
 
-export const StoryGeneratorOutputSchema = z.object({
+const StoryGeneratorOutputSchema = z.object({
   title: z.string().describe('A short, catchy, adventurous title for the story.'),
   story: z.string().describe('The introductory paragraph of the story that sets the scene and presents the first challenge based on the assignment.'),
 });
