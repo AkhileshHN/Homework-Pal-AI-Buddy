@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useEffect, useRef, useState } from "react";
@@ -21,6 +20,18 @@ import { PalAvatar } from "./icons";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "./ui/alert-dialog";
+import { useRouter } from "next/navigation";
 
 type Message = {
   id: number;
@@ -36,6 +47,7 @@ type HomeworkPalProps = {
   assignmentTitle?: string;
   assignmentDescription?: string;
   assignmentId: string;
+  starsToAward?: number;
 };
 
 // Check for SpeechRecognition API
@@ -43,13 +55,14 @@ const SpeechRecognition =
   typeof window !== 'undefined' ? (window.SpeechRecognition || window.webkitSpeechRecognition) : null;
 
 
-export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, assignmentDescription, assignmentId }: HomeworkPalProps) {
+export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, assignmentDescription, assignmentId, starsToAward = 1 }: HomeworkPalProps) {
   const [state, formAction, isPending] = useActionState(getHomeworkHelp, initialState);
   const [conversation, setConversation] = useState<Message[]>([]);
   const [starCount, setStarCount] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   
+  const router = useRouter();
   const messageIdCounter = useRef(0);
   const formRef = useRef<HTMLFormElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -103,7 +116,7 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
       setConversation((prev) => [...prev, newAiMessage]);
 
       if (state.message.includes("⭐")) {
-        setStarCount((prev) => prev + 1);
+        setStarCount((prev) => prev + (starsToAward || 1));
         setIsComplete(true);
       }
       if (state.audio && audioRef.current) {
@@ -113,7 +126,7 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
     }
     
     formRef.current?.reset();
-  }, [state, toast]);
+  }, [state, toast, starsToAward]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -186,6 +199,43 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
     }
     return 'ai-step';
   }
+  
+  const ExitButton = () => {
+      if (isComplete) {
+          return (
+             <Button asChild variant="ghost" size="icon">
+                <Link href="/play" aria-label="Exit Quest">
+                    <X className="h-6 w-6" />
+                </Link>
+            </Button>
+          )
+      }
+      
+      return (
+        <AlertDialog>
+            <AlertDialogTrigger asChild>
+                 <Button variant="ghost" size="icon" aria-label="Exit Quest">
+                    <X className="h-6 w-6" />
+                </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Are you sure you want to leave?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        Your progress on this quest is not finished yet. If you leave now, you can
+                        always come back and continue where you left off.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Stay</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => router.push('/play')}>
+                        Exit Quest
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+      )
+  }
 
   return (
     <Card className="w-full max-w-2xl mx-auto shadow-2xl rounded-2xl overflow-hidden flex flex-col h-full">
@@ -207,11 +257,7 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
                 <span>Quest Complete!</span>
               </div>
             )}
-            <Button asChild variant="ghost" size="icon">
-                <Link href="/play" aria-label="Exit Quest">
-                    <X className="h-6 w-6" />
-                </Link>
-            </Button>
+            <ExitButton />
         </div>
       </CardHeader>
       <CardContent className="flex-1 p-0">
@@ -288,6 +334,7 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
             const newFormData = new FormData();
             newFormData.append('history', JSON.stringify(historyForAction));
             newFormData.append('assignmentId', assignmentId);
+            newFormData.append('starsToAward', String(starsToAward));
             if (assignmentDescription) {
                 newFormData.append('assignment', assignmentDescription);
             }
@@ -333,3 +380,5 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
     </Card>
   );
 }
+
+    
