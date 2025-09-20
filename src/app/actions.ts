@@ -191,7 +191,6 @@ export async function updateAssignmentStatus(id: string, status: 'new' | 'inprog
             if (assignments[assignmentIndex].status === 'completed') return; // Don't change a completed quest
             assignments[assignmentIndex].status = status;
             await saveAssignments({ assignments });
-            revalidatePath('/parent');
         }
     } catch(error) {
         console.error("Failed to update assignment status", error);
