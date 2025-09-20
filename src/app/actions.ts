@@ -12,6 +12,7 @@ import path from 'path';
 import { generateStory, type StoryGeneratorInput } from "@/ai/flows/story-generator";
 
 const inputSchema = z.object({
+  assignment: z.string(),
   history: z.array(z.object({
     role: z.enum(['user', 'model']),
     content: z.string(),
@@ -42,6 +43,7 @@ export async function getHomeworkHelp(
   formData: FormData
 ): Promise<{ message: string; audio: string; error?: string } | { error: string, message?: undefined, audio?: undefined }> {
   const historyStr = formData.get("history") as string;
+  const assignment = formData.get("assignment") as string;
   
   let history = [];
   try {
@@ -50,7 +52,7 @@ export async function getHomeworkHelp(
     return { error: 'Invalid history format.' };
   }
 
-  const validatedFields = inputSchema.safeParse({ history });
+  const validatedFields = inputSchema.safeParse({ history, assignment });
 
   if (!validatedFields.success) {
     return {
@@ -59,7 +61,10 @@ export async function getHomeworkHelp(
   }
 
   try {
-    const output = await homeworkBuddy({ history: validatedFields.data.history });
+    const output = await homeworkBuddy({ 
+      assignment: validatedFields.data.assignment,
+      history: validatedFields.data.history 
+    });
     
     // Don't generate audio for reward messages.
     if (output.message.includes("⭐")) {

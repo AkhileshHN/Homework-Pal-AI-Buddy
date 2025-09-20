@@ -31,10 +31,11 @@ type HomeworkPalProps = {
   initialMessage?: string;
   initialAudio?: string;
   assignmentTitle?: string;
+  assignmentDescription?: string;
 };
 
 
-export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle }: HomeworkPalProps) {
+export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, assignmentDescription }: HomeworkPalProps) {
   const [state, formAction, isPending] = useActionState(getHomeworkHelp, initialState);
   const [conversation, setConversation] = useState<Message[]>([]);
   const [starCount, setStarCount] = useState(0);
@@ -209,6 +210,9 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle }: H
             
             const newFormData = new FormData();
             newFormData.append('history', JSON.stringify(historyForAction));
+            if (assignmentDescription) {
+                newFormData.append('assignment', assignmentDescription);
+            }
             formAction(newFormData);
           }}
           className="flex items-center w-full gap-2"
