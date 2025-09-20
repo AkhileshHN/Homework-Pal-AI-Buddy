@@ -2,7 +2,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { CreateAssignmentForm } from './_components/create-assignment-form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { List, BookCheck, CheckCheck, LoaderCircle } from 'lucide-react';
+import { List, BookCheck, CheckCheck, LoaderCircle, Star } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { DeleteAssignmentButton } from './_components/delete-assignment-button';
@@ -13,12 +13,16 @@ type Assignment = {
   description: string;
   createdAt: string;
   status: 'new' | 'inprogress' | 'completed';
+  stars: number;
 };
 
 async function getAssignments(): Promise<Assignment[]> {
   const filePath = path.join(process.cwd(), 'src', 'lib', 'assignments.json');
   try {
     const data = await fs.readFile(filePath, 'utf-8');
+    if (!data) {
+        return [];
+    }
     // Sort by creation date DESC
     const assignments = (JSON.parse(data).assignments || []).sort((a: Assignment, b: Assignment) => {
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
@@ -27,6 +31,9 @@ async function getAssignments(): Promise<Assignment[]> {
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
       return []; // File not found, return empty array
+    }
+    if (error instanceof SyntaxError) {
+        return [];
     }
     throw error;
   }
@@ -87,9 +94,16 @@ export default async function ParentPage() {
                                         <h3 className="font-semibold">{assignment.title}</h3>
                                     </div>
                                     <p className="text-sm text-muted-foreground">{assignment.description}</p>
-                                    <p className="text-xs text-muted-foreground/50 mt-1">
-                                        Created on: {new Date(assignment.createdAt).toLocaleDateString()}
-                                    </p>
+                                    <div className="flex items-center text-xs text-muted-foreground/50 mt-1">
+                                        <span>
+                                            Created on: {new Date(assignment.createdAt).toLocaleDateString()}
+                                        </span>
+                                        <span className="mx-2">|</span>
+                                        <div className="flex items-center gap-1">
+                                            <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
+                                            <span>{assignment.stars} star{assignment.stars > 1 ? 's' : ''}</span>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <Button asChild variant={assignment.status === 'completed' ? 'outline' : 'secondary'} size="sm" disabled={assignment.status === 'completed'}>

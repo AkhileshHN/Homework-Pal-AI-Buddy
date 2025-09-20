@@ -29,15 +29,23 @@ type Assignment = {
   description: string;
   createdAt: string;
   status: 'new' | 'inprogress' | 'completed';
+  stars: number;
 };
 
 async function getAssignments(): Promise<{assignments: Assignment[]}> {
   try {
     const data = await fs.readFile(assignmentsFilePath, 'utf-8');
+    if (!data) {
+        return { assignments: [] };
+    }
     return JSON.parse(data);
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
       return { assignments: [] }; // File not found, return empty
+    }
+    // If JSON is invalid, return empty array
+    if (error instanceof SyntaxError) {
+        return { assignments: [] };
     }
     throw error;
   }
@@ -55,6 +63,7 @@ export async function getHomeworkHelp(
   const historyStr = formData.get("history") as string;
   const assignment = formData.get("assignment") as string;
   const assignmentId = formData.get("assignmentId") as string;
+  const starsToAward = parseInt(formData.get("starsToAward") as string, 10);
   
   let history = [];
   try {
@@ -74,7 +83,8 @@ export async function getHomeworkHelp(
   try {
     const output = await homeworkBuddy({ 
       assignment: validatedFields.data.assignment,
-      history: validatedFields.data.history 
+      history: validatedFields.data.history,
+      stars: starsToAward,
     });
     
     // Don't generate audio for reward messages.
@@ -105,12 +115,14 @@ export async function getHomeworkHelp(
 const createAssignmentSchema = z.object({
   title: z.string().min(1, 'Title is required.'),
   description: z.string().min(1, 'Description is required.'),
+  stars: z.coerce.number().min(1, 'Stars must be at least 1.'),
 });
 
 export async function createAssignment(prevState: any, formData: FormData) {
   const validatedFields = createAssignmentSchema.safeParse({
     title: formData.get('title'),
     description: formData.get('description'),
+    stars: formData.get('stars'),
   });
 
   if (!validatedFields.success) {
@@ -119,7 +131,7 @@ export async function createAssignment(prevState: any, formData: FormData) {
     };
   }
 
-  const { title, description } = validatedFields.data;
+  const { title, description, stars } = validatedFields.data;
 
   try {
     const data = await getAssignments();
@@ -129,6 +141,7 @@ export async function createAssignment(prevState: any, formData: FormData) {
       description,
       createdAt: new Date().toISOString(),
       status: 'new' as const,
+      stars,
     };
     data.assignments.push(newAssignment);
     await saveAssignments(data);

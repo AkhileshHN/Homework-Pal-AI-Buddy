@@ -10,17 +10,22 @@ type Assignment = {
   description: string;
   createdAt: string;
   status: 'new' | 'inprogress' | 'completed';
+  stars: number;
 };
 
 async function getAssignment(id: string): Promise<Assignment | undefined> {
   const filePath = path.join(process.cwd(), 'src', 'lib', 'assignments.json');
   try {
     const data = await fs.readFile(filePath, 'utf-8');
+    if (!data) return undefined;
     const assignments = JSON.parse(data).assignments || [];
     return assignments.find((a: Assignment) => a.id === id);
   } catch (error) {
      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
       return undefined;
+    }
+    if (error instanceof SyntaxError) {
+        return undefined;
     }
     throw error;
   }
@@ -58,6 +63,7 @@ export default async function PlayAssignmentPage({ params }: { params: { id: str
         assignmentDescription={assignment.description}
         initialMessage={story.story}
         initialAudio={story.audio}
+        starsToAward={assignment.stars}
       />
     </div>
   );

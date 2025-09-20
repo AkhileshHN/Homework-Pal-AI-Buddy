@@ -10,16 +10,21 @@ type Assignment = {
   title: string;
   description: string;
   createdAt: string;
+  status: 'new' | 'inprogress' | 'completed';
 };
 
 async function getAssignments(): Promise<Assignment[]> {
   const filePath = path.join(process.cwd(), 'src', 'lib', 'assignments.json');
    try {
     const data = await fs.readFile(filePath, 'utf-8');
+    if (!data) return [];
     return JSON.parse(data).assignments || [];
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
       return []; // File not found, return empty array
+    }
+    if (error instanceof SyntaxError) {
+        return [];
     }
     throw error;
   }
@@ -55,7 +60,7 @@ export default async function PlayPage() {
                 <Button asChild className="w-full">
                   <Link href={`/play/${assignment.id}`}>
                     <BookCheck className="mr-2 h-4 w-4" />
-                    Start Quest
+                    {assignment.status === 'inprogress' ? 'Continue Quest' : 'Start Quest'}
                   </Link>
                 </Button>
               </CardContent>
