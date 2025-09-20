@@ -18,7 +18,7 @@ async function getAssignments(): Promise<Assignment[]> {
    try {
     const data = await fs.readFile(filePath, 'utf-8');
     if (!data) return [];
-    return JSON.parse(data).assignments || [];
+    return (JSON.parse(data).assignments || []).filter((a: Assignment) => a.status !== 'completed');
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
       return []; // File not found, return empty array
