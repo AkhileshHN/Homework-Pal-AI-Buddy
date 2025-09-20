@@ -14,10 +14,11 @@ import {
 } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
-import { Bot, Mic, Send, Star, User, LoaderCircle, Lightbulb } from "lucide-react";
+import { Bot, Mic, Send, Star, User, LoaderCircle, Lightbulb, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PalAvatar } from "./icons";
 import { useToast } from "@/hooks/use-toast";
+import Link from "next/link";
 
 type Message = {
   id: number;
@@ -134,8 +135,15 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
             <p className="text-sm text-muted-foreground">{assignmentTitle ? 'Let the adventure begin!' : 'Your friendly AI study buddy'}</p>
           </div>
         </div>
-        <div className="animate-star-pop">
-           <StarCounter count={starCount} />
+        <div className="flex items-center gap-4">
+            <div className="animate-star-pop">
+               <StarCounter count={starCount} />
+            </div>
+            <Button asChild variant="ghost" size="icon">
+                <Link href="/play" aria-label="Exit Quest">
+                    <X className="h-6 w-6" />
+                </Link>
+            </Button>
         </div>
       </CardHeader>
       <CardContent className="flex-1 p-0">
