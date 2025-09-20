@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 import { PalAvatar } from "./icons";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
 
 type Message = {
   id: number;
@@ -37,17 +38,24 @@ type HomeworkPalProps = {
   assignmentId: string;
 };
 
+// Check for SpeechRecognition API
+const SpeechRecognition =
+  typeof window !== 'undefined' ? (window.SpeechRecognition || window.webkitSpeechRecognition) : null;
+
 
 export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, assignmentDescription, assignmentId }: HomeworkPalProps) {
   const [state, formAction, isPending] = useActionState(getHomeworkHelp, initialState);
   const [conversation, setConversation] = useState<Message[]>([]);
   const [starCount, setStarCount] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  
   const messageIdCounter = useRef(0);
   const formRef = useRef<HTMLFormElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const audioRef = useRef<HTMLAudioElement>(null);
+  const recognitionRef = useRef<any>(null); // Using 'any' for cross-browser compatibility
 
   useEffect(() => {
     if (initialMessage && conversation.length === 0) {
@@ -74,7 +82,6 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
         description: state.error,
         variant: "destructive",
       });
-      // Add an error message to conversation
       setConversation((prev) => [
         ...prev,
         {
@@ -111,6 +118,57 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [conversation]);
+
+  const handleMicClick = () => {
+    if (!SpeechRecognition) {
+        toast({
+            title: "Browser Not Supported",
+            description: "Your browser doesn't support voice recognition.",
+            variant: "destructive",
+        });
+        return;
+    }
+
+    if (isRecording) {
+        recognitionRef.current?.stop();
+        setIsRecording(false);
+        return;
+    }
+
+    recognitionRef.current = new SpeechRecognition();
+    recognitionRef.current.lang = 'en-US';
+    recognitionRef.current.interimResults = false;
+    recognitionRef.current.maxAlternatives = 1;
+
+    recognitionRef.current.onstart = () => {
+        setIsRecording(true);
+        toast({ title: "Listening...", description: "Start speaking your answer."});
+    };
+
+    recognitionRef.current.onend = () => {
+        setIsRecording(false);
+    };
+
+    recognitionRef.current.onerror = (event: any) => {
+        setIsRecording(false);
+        toast({
+            title: "Voice Recognition Error",
+            description: `Error: ${event.error}. Please try again.`,
+            variant: "destructive",
+        });
+    };
+
+    recognitionRef.current.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        const problemTextarea = formRef.current?.elements.namedItem("problem") as HTMLTextAreaElement;
+        if(problemTextarea) {
+            problemTextarea.value = transcript;
+            formRef.current?.requestSubmit();
+        }
+    };
+
+    recognitionRef.current.start();
+  };
 
 
   const StarCounter = ({ count }: { count: number }) => (
@@ -251,10 +309,20 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
               }
             }}
           />
-           <Button type="button" size="icon" variant="ghost" disabled={isPending || isComplete}>
-            <Mic className="w-5 h-5" />
-            <span className="sr-only">Use microphone</span>
-          </Button>
+           <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button type="button" size="icon" variant="ghost" onClick={handleMicClick} disabled={isPending || isComplete || !SpeechRecognition}>
+                    <Mic className="w-5 h-5" />
+                    {isRecording && <span className="absolute top-1 right-1 block h-2 w-2 rounded-full bg-red-500 animate-pulse" />}
+                    <span className="sr-only">Use microphone</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                {SpeechRecognition ? (isRecording ? 'Stop recording' : 'Start recording') : 'Voice recognition not supported'}
+              </TooltipContent>
+            </Tooltip>
+           </TooltipProvider>
           <Button type="submit" size="icon" disabled={isPending || isComplete}>
             {isPending ? <LoaderCircle className="w-5 h-5 animate-spin"/> : <Send className="w-5 h-5" />}
             <span className="sr-only">Send message</span>
