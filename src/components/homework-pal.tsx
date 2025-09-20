@@ -90,6 +90,7 @@ export function HomeworkPal() {
       }
     };
     addMessageWithDelay();
+    formRef.current?.reset();
 
   }, [formState, toast]);
 
@@ -97,19 +98,6 @@ export function HomeworkPal() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [conversation]);
 
-  const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const problem = formData.get("problem") as string;
-    if (!problem.trim()) return;
-
-    setConversation((prev) => [
-      ...prev,
-      { id: messageIdCounter.current++, type: "user", text: problem },
-    ]);
-    formAction(formData);
-    formRef.current?.reset();
-  };
 
   const StarCounter = ({ count }: { count: number }) => (
     <div className="flex items-center gap-2 rounded-full bg-accent/30 px-4 py-2 text-accent-foreground shadow-inner">
@@ -186,7 +174,16 @@ export function HomeworkPal() {
       <CardFooter className="p-4 border-t bg-card/80 backdrop-blur-sm">
         <form
           ref={formRef}
-          onSubmit={handleFormSubmit}
+          action={(formData) => {
+            const problem = formData.get("problem") as string;
+            if (!problem.trim()) return;
+
+            setConversation((prev) => [
+              ...prev,
+              { id: messageIdCounter.current++, type: "user", text: problem },
+            ]);
+            formAction(formData);
+          }}
           className="flex items-center w-full gap-2"
         >
           <Textarea
