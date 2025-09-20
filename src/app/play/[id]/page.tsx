@@ -46,7 +46,7 @@ export default async function PlayAssignmentPage({ params }: { params: { id: str
 
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center p-4">
+    <div className="flex h-screen w-full items-center justify-center p-4">
       <HomeworkPal 
         assignmentTitle={story.title}
         assignmentDescription={assignment.description}

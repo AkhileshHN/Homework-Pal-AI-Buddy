@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useEffect, useRef, useState } from "react";
@@ -126,7 +127,7 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
   }
 
   return (
-    <Card className="w-full max-w-2xl mx-auto shadow-2xl rounded-2xl overflow-hidden flex flex-col h-[85vh]">
+    <Card className="w-full max-w-2xl mx-auto shadow-2xl rounded-2xl overflow-hidden flex flex-col h-full">
       <CardHeader className="flex flex-row items-center justify-between p-4 border-b bg-card/80 backdrop-blur-sm">
         <div className="flex items-center gap-3">
           <PalAvatar className="w-12 h-12" />
