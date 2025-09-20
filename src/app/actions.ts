@@ -11,6 +11,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { generateStory, type StoryGeneratorInput } from "@/ai/flows/story-generator";
 import { revalidatePath } from "next/cache";
+import { designQuest } from "@/ai/flows/design-quest";
 
 const inputSchema = z.object({
   assignment: z.string(),
@@ -134,11 +135,16 @@ export async function createAssignment(prevState: any, formData: FormData) {
   const { title, description, stars } = validatedFields.data;
 
   try {
+    // Generate the full quest content from the description
+    const questResult = await designQuest({ description });
+    const fullQuest = questResult.designedQuest;
+
+
     const data = await getAssignments();
     const newAssignment = {
       id: Date.now().toString(),
       title,
-      description,
+      description: fullQuest, // Store the full, AI-generated quest
       createdAt: new Date().toISOString(),
       status: 'new' as const,
       stars,
