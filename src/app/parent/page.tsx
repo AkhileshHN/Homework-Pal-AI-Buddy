@@ -2,7 +2,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { CreateAssignmentForm } from './_components/create-assignment-form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { List, BookCheck } from 'lucide-react';
+import { List, BookCheck, CheckCheck, LoaderCircle } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
@@ -11,13 +11,18 @@ type Assignment = {
   title: string;
   description: string;
   createdAt: string;
+  status: 'new' | 'inprogress' | 'completed';
 };
 
 async function getAssignments(): Promise<Assignment[]> {
   const filePath = path.join(process.cwd(), 'src', 'lib', 'assignments.json');
   try {
     const data = await fs.readFile(filePath, 'utf-8');
-    return JSON.parse(data).assignments || [];
+    // Sort by creation date DESC
+    const assignments = (JSON.parse(data).assignments || []).sort((a: Assignment, b: Assignment) => {
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+    return assignments;
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
       return []; // File not found, return empty array
@@ -25,6 +30,18 @@ async function getAssignments(): Promise<Assignment[]> {
     throw error;
   }
 }
+
+const StatusIcon = ({ status }: { status: Assignment['status'] }) => {
+    switch (status) {
+        case 'inprogress':
+            return <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />;
+        case 'completed':
+            return <CheckCheck className="mr-2 h-4 w-4 text-green-500" />;
+        default:
+            return <BookCheck className="mr-2 h-4 w-4" />;
+    }
+}
+
 
 export default async function ParentPage() {
   const assignments = await getAssignments();
@@ -63,16 +80,20 @@ export default async function ParentPage() {
                         {assignments.map((assignment) => (
                             <li key={assignment.id} className="flex items-start justify-between p-4 rounded-lg border bg-card-foreground/5">
                                 <div>
-                                    <h3 className="font-semibold">{assignment.title}</h3>
+                                    <div className="flex items-center">
+                                         {assignment.status === 'completed' && <div className="w-2 h-2 rounded-full bg-green-500 mr-2"></div>}
+                                         {assignment.status === 'inprogress' && <div className="w-2 h-2 rounded-full bg-yellow-500 mr-2"></div>}
+                                        <h3 className="font-semibold">{assignment.title}</h3>
+                                    </div>
                                     <p className="text-sm text-muted-foreground">{assignment.description}</p>
                                     <p className="text-xs text-muted-foreground/50 mt-1">
                                         Created on: {new Date(assignment.createdAt).toLocaleDateString()}
                                     </p>
                                 </div>
-                                <Button asChild variant="secondary" size="sm">
+                                <Button asChild variant={assignment.status === 'completed' ? 'outline' : 'secondary'} size="sm" disabled={assignment.status === 'completed'}>
                                     <Link href={`/play/${assignment.id}`}>
-                                        <BookCheck className="mr-2 h-4 w-4" />
-                                        Start Quest
+                                        <StatusIcon status={assignment.status} />
+                                        {assignment.status === 'completed' ? 'Completed' : (assignment.status === 'inprogress' ? 'In Progress' : 'Start Quest')}
                                     </Link>
                                 </Button>
                             </li>

@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
-import { Bot, Mic, Send, Star, User, LoaderCircle, Lightbulb, X } from "lucide-react";
+import { Bot, Mic, Send, Star, User, LoaderCircle, Lightbulb, X, CheckCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PalAvatar } from "./icons";
 import { useToast } from "@/hooks/use-toast";
@@ -34,13 +34,15 @@ type HomeworkPalProps = {
   initialAudio?: string;
   assignmentTitle?: string;
   assignmentDescription?: string;
+  assignmentId: string;
 };
 
 
-export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, assignmentDescription }: HomeworkPalProps) {
+export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, assignmentDescription, assignmentId }: HomeworkPalProps) {
   const [state, formAction, isPending] = useActionState(getHomeworkHelp, initialState);
   const [conversation, setConversation] = useState<Message[]>([]);
   const [starCount, setStarCount] = useState(0);
+  const [isComplete, setIsComplete] = useState(false);
   const messageIdCounter = useRef(0);
   const formRef = useRef<HTMLFormElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -93,8 +95,9 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
 
       setConversation((prev) => [...prev, newAiMessage]);
 
-      if (state.message.includes("⭐") || state.message.toLowerCase().includes("great job")) {
+      if (state.message.includes("⭐")) {
         setStarCount((prev) => prev + 1);
+        setIsComplete(true);
       }
       if (state.audio && audioRef.current) {
         audioRef.current.src = state.audio;
@@ -120,7 +123,7 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
 
   const getMessageType = (message: Message) => {
     if (message.role === 'user') return 'user';
-    if (message.content.includes("⭐") || message.content.toLowerCase().includes("great job")) {
+    if (message.content.includes("⭐")) {
       return 'ai-reward';
     }
     return 'ai-step';
@@ -137,9 +140,15 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
           </div>
         </div>
         <div className="flex items-center gap-4">
-            <div className="animate-star-pop">
+            <div className={cn("animate-star-pop", isComplete && "hidden")}>
                <StarCounter count={starCount} />
             </div>
+             {isComplete && (
+              <div className="flex items-center gap-2 rounded-full bg-green-500/20 px-4 py-2 text-green-700 font-bold">
+                <CheckCheck />
+                <span>Quest Complete!</span>
+              </div>
+            )}
             <Button asChild variant="ghost" size="icon">
                 <Link href="/play" aria-label="Exit Quest">
                     <X className="h-6 w-6" />
@@ -203,6 +212,7 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
         <form
           ref={formRef}
           action={(formData) => {
+            if (isComplete) return;
             const problem = formData.get("problem") as string;
             if (!problem.trim()) return;
 
@@ -219,6 +229,7 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
             
             const newFormData = new FormData();
             newFormData.append('history', JSON.stringify(historyForAction));
+            newFormData.append('assignmentId', assignmentId);
             if (assignmentDescription) {
                 newFormData.append('assignment', assignmentDescription);
             }
@@ -229,10 +240,10 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
           <Textarea
             suppressHydrationWarning
             name="problem"
-            placeholder="What is your answer?"
+            placeholder={isComplete ? "You finished this quest!" : "What is your answer?"}
             className="flex-1 resize-none bg-background text-base"
             rows={1}
-            disabled={isPending}
+            disabled={isPending || isComplete}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
@@ -240,11 +251,11 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
               }
             }}
           />
-           <Button type="button" size="icon" variant="ghost" disabled={isPending}>
+           <Button type="button" size="icon" variant="ghost" disabled={isPending || isComplete}>
             <Mic className="w-5 h-5" />
             <span className="sr-only">Use microphone</span>
           </Button>
-          <Button type="submit" size="icon" disabled={isPending}>
+          <Button type="submit" size="icon" disabled={isPending || isComplete}>
             {isPending ? <LoaderCircle className="w-5 h-5 animate-spin"/> : <Send className="w-5 h-5" />}
             <span className="sr-only">Send message</span>
           </Button>

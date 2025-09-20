@@ -17,11 +17,20 @@ const inputSchema = z.object({
     role: z.enum(['user', 'model']),
     content: z.string(),
   })),
+  assignmentId: z.string(),
 });
 
 const assignmentsFilePath = path.join(process.cwd(), 'src', 'lib', 'assignments.json');
 
-async function getAssignments() {
+type Assignment = {
+  id: string;
+  title: string;
+  description: string;
+  createdAt: string;
+  status: 'new' | 'inprogress' | 'completed';
+};
+
+async function getAssignments(): Promise<{assignments: Assignment[]}> {
   try {
     const data = await fs.readFile(assignmentsFilePath, 'utf-8');
     return JSON.parse(data);
@@ -44,6 +53,7 @@ export async function getHomeworkHelp(
 ): Promise<{ message: string; audio: string; error?: string } | { error: string, message?: undefined, audio?: undefined }> {
   const historyStr = formData.get("history") as string;
   const assignment = formData.get("assignment") as string;
+  const assignmentId = formData.get("assignmentId") as string;
   
   let history = [];
   try {
@@ -52,7 +62,7 @@ export async function getHomeworkHelp(
     return { error: 'Invalid history format.' };
   }
 
-  const validatedFields = inputSchema.safeParse({ history, assignment });
+  const validatedFields = inputSchema.safeParse({ history, assignment, assignmentId });
 
   if (!validatedFields.success) {
     return {
@@ -68,6 +78,13 @@ export async function getHomeworkHelp(
     
     // Don't generate audio for reward messages.
     if (output.message.includes("⭐")) {
+        // This is the final reward, so mark as completed
+        const { assignments } = await getAssignments();
+        const assignmentIndex = assignments.findIndex(a => a.id === assignmentId);
+        if (assignmentIndex !== -1) {
+          assignments[assignmentIndex].status = 'completed';
+          await saveAssignments({ assignments });
+        }
         return { ...output, audio: "" };
     }
     
@@ -109,6 +126,7 @@ export async function createAssignment(prevState: any, formData: FormData) {
       title,
       description,
       createdAt: new Date().toISOString(),
+      status: 'new' as const,
     };
     data.assignments.push(newAssignment);
     await saveAssignments(data);
@@ -141,4 +159,19 @@ export async function getGamifiedStory(input: { assignment: string }) {
     console.error("Error generating story:", error);
     throw new Error("Could not generate a story for the assignment.");
   }
+}
+
+export async function updateAssignmentStatus(id: string, status: 'new' | 'inprogress' | 'completed') {
+    try {
+        const { assignments } = await getAssignments();
+        const assignmentIndex = assignments.findIndex(a => a.id === id);
+        if (assignmentIndex !== -1) {
+            if (assignments[assignmentIndex].status === 'completed') return; // Don't change a completed quest
+            assignments[assignmentIndex].status = status;
+            await saveAssignments({ assignments });
+        }
+    } catch(error) {
+        console.error("Failed to update assignment status", error);
+        // We don't need to throw here, as it's not critical for the user flow
+    }
 }
