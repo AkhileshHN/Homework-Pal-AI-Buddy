@@ -39,14 +39,11 @@ async function getAssignments(): Promise<{assignments: Assignment[]}> {
     if (!data) {
         return { assignments: [] };
     }
-    return JSON.parse(data);
+    const jsonData = JSON.parse(data);
+    return { assignments: jsonData.assignments || [] };
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-      return { assignments: [] }; // File not found, return empty
-    }
-    // If JSON is invalid, return empty array
-    if (error instanceof SyntaxError) {
-        return { assignments: [] };
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT' || error instanceof SyntaxError) {
+      return { assignments: [] }; // File not found or invalid JSON, return empty
     }
     throw error;
   }
@@ -98,6 +95,7 @@ export async function getHomeworkHelp(
           await saveAssignments({ assignments });
         }
         revalidatePath('/parent');
+        revalidatePath('/play');
         return { ...output, audio: "" };
     }
     
@@ -152,6 +150,7 @@ export async function createAssignment(prevState: any, formData: FormData) {
     data.assignments.push(newAssignment);
     await saveAssignments(data);
     revalidatePath('/parent');
+    revalidatePath('/play');
     return { success: true };
   } catch (error) {
     console.error('Failed to create assignment:', error);
@@ -191,6 +190,10 @@ export async function updateAssignmentStatus(id: string, status: 'new' | 'inprog
             if (assignments[assignmentIndex].status === 'completed') return; // Don't change a completed quest
             assignments[assignmentIndex].status = status;
             await saveAssignments({ assignments });
+            // Revalidation should happen where data is mutated and a redirect/reload is expected
+            if (status === 'inprogress') {
+              revalidatePath('/parent');
+            }
         }
     } catch(error) {
         console.error("Failed to update assignment status", error);
@@ -204,6 +207,7 @@ export async function deleteAssignment(id: string) {
         const updatedAssignments = assignments.filter((a) => a.id !== id);
         await saveAssignments({ assignments: updatedAssignments });
         revalidatePath('/parent');
+        revalidatePath('/play');
         return { success: true };
     } catch (error) {
         console.error('Failed to delete assignment:', error);

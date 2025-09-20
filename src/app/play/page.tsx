@@ -18,13 +18,11 @@ async function getAssignments(): Promise<Assignment[]> {
    try {
     const data = await fs.readFile(filePath, 'utf-8');
     if (!data) return [];
-    return (JSON.parse(data).assignments || []).filter((a: Assignment) => a.status !== 'completed');
+    const jsonData = JSON.parse(data);
+    return (jsonData.assignments || []).filter((a: Assignment) => a.status !== 'completed');
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-      return []; // File not found, return empty array
-    }
-    if (error instanceof SyntaxError) {
-        return [];
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT' || error instanceof SyntaxError) {
+      return []; // File not found or invalid JSON, return empty array
     }
     throw error;
   }

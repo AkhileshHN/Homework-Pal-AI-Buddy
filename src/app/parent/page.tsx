@@ -23,17 +23,15 @@ async function getAssignments(): Promise<Assignment[]> {
     if (!data) {
         return [];
     }
+    const jsonData = JSON.parse(data);
     // Sort by creation date DESC
-    const assignments = (JSON.parse(data).assignments || []).sort((a: Assignment, b: Assignment) => {
+    const assignments = (jsonData.assignments || []).sort((a: Assignment, b: Assignment) => {
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
     return assignments;
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-      return []; // File not found, return empty array
-    }
-    if (error instanceof SyntaxError) {
-        return [];
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT' || error instanceof SyntaxError) {
+      return []; // File not found or invalid JSON, return empty array
     }
     throw error;
   }

@@ -22,11 +22,8 @@ async function getAssignment(id: string): Promise<Assignment | undefined> {
     const assignments = jsonData.assignments || [];
     return assignments.find((a: Assignment) => a.id === id);
   } catch (error) {
-     if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+     if ((error as NodeJS.ErrnoException).code === 'ENOENT' || error instanceof SyntaxError) {
       return undefined;
-    }
-    if (error instanceof SyntaxError) {
-        return undefined;
     }
     throw error;
   }
