@@ -35,12 +35,12 @@ const storyPrompt = ai.definePrompt({
 Assignment: "{{assignment}}"
 
 Instructions:
-1.  Create a short, catchy, and adventurous title for this quest.
-2.  Write a single, engaging introductory paragraph.
+1.  Create a short, catchy, and adventurous title for this quest (e.g., "Mathronauts to the Rescue!").
+2.  Write a single, short and engaging introductory paragraph (2-3 sentences max).
 3.  The paragraph must set a fun scene (e.g., enchanted forest, outer space, mysterious castle).
 4.  It must introduce a clear first challenge or question that is directly related to the assignment.
 5.  End the paragraph by asking the child to solve that first challenge. Keep it simple and direct.
-6.  The tone should be playful, encouraging, and exciting.
+6.  The tone should be playful, encouraging, and exciting. Use an emoji!
 `,
 });
 
