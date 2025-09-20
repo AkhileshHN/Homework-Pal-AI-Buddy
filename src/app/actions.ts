@@ -4,8 +4,8 @@
 import {
   homeworkBuddy,
   type HomeworkBuddyInput,
-  type HomeworkBuddyOutput,
 } from "@/ai/flows/reasoning-based-guidance";
+import { textToSpeech } from "@/ai/flows/text-to-speech";
 import { z } from "zod";
 
 const inputSchema = z.object({
@@ -18,7 +18,7 @@ const inputSchema = z.object({
 export async function getHomeworkHelp(
   prevState: any,
   formData: FormData
-): Promise<{ message: string; error?: string } | { error: string, message?: undefined }> {
+): Promise<{ message: string; audio: string; error?: string } | { error: string, message?: undefined, audio?: undefined }> {
   const historyStr = formData.get("history") as string;
   
   let history = [];
@@ -38,11 +38,20 @@ export async function getHomeworkHelp(
 
   try {
     const output = await homeworkBuddy({ history: validatedFields.data.history });
-    return output;
+    
+    // Don't generate audio for reward messages.
+    if (output.message.includes("⭐")) {
+        return { ...output, audio: "" };
+    }
+    
+    const { audio } = await textToSpeech(output.message);
+
+    return { ...output, audio };
   } catch (error) {
     console.error("Error getting homework help:", error);
     return {
       message: "Oops! I had a little trouble thinking. Could you please ask your question again?",
+      audio: ""
     };
   }
 }

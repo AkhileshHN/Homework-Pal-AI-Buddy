@@ -24,7 +24,7 @@ type Message = {
   content: string;
 };
 
-const initialState: { message?: string; error?: string } | null = null;
+const initialState: { message?: string; audio?: string; error?: string } | null = null;
 
 export function HomeworkPal() {
   const [state, formAction, isPending] = useActionState(getHomeworkHelp, initialState);
@@ -34,6 +34,8 @@ export function HomeworkPal() {
   const formRef = useRef<HTMLFormElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const audioRef = useRef<HTMLAudioElement>(null);
+
 
   useEffect(() => {
     if (!state) return;
@@ -67,6 +69,10 @@ export function HomeworkPal() {
 
       if (state.message.includes("⭐") || state.message.toLowerCase().includes("great job")) {
         setStarCount((prev) => prev + 1);
+      }
+      if (state.audio && audioRef.current) {
+        audioRef.current.src = state.audio;
+        audioRef.current.play().catch(e => console.error("Audio playback failed:", e));
       }
     }
     
@@ -207,6 +213,7 @@ export function HomeworkPal() {
           </Button>
         </form>
       </CardFooter>
+      <audio ref={audioRef} className="hidden" />
     </Card>
   );
 }
