@@ -1,7 +1,8 @@
 
 "use client";
 
-import { useEffect, useRef, useState, useActionState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useActionState } from "react";
 import { getHomeworkHelp } from "@/app/actions";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,18 +17,17 @@ import { Bot, Mic, Send, Star, User, LoaderCircle, Lightbulb } from "lucide-reac
 import { cn } from "@/lib/utils";
 import { PalAvatar } from "./icons";
 import { useToast } from "@/hooks/use-toast";
-import type { HomeworkBuddyOutput } from "@/ai/flows/reasoning-based-guidance";
 
 type Message = {
   id: number;
-  type: "user" | "ai-step" | "ai-reward";
-  text: string;
+  role: "user" | "model";
+  content: string;
 };
 
-const initialState: (HomeworkBuddyOutput & { error?: string }) | null = null;
+const initialState: { message?: string; error?: string } | null = null;
 
 export function HomeworkPal() {
-  const [formState, formAction, isPending] = useActionState(getHomeworkHelp, initialState);
+  const [state, formAction, isPending] = useActionState(getHomeworkHelp, initialState);
   const [conversation, setConversation] = useState<Message[]>([]);
   const [starCount, setStarCount] = useState(0);
   const messageIdCounter = useRef(0);
@@ -36,12 +36,12 @@ export function HomeworkPal() {
   const { toast } = useToast();
 
   useEffect(() => {
-    if (!formState) return;
+    if (!state) return;
 
-    if (formState.error) {
+    if (state.error) {
       toast({
         title: "Error",
-        description: formState.error,
+        description: state.error,
         variant: "destructive",
       });
       // Add an error message to conversation
@@ -49,50 +49,29 @@ export function HomeworkPal() {
         ...prev,
         {
           id: messageIdCounter.current++,
-          type: "ai-step",
-          text: "I'm sorry, I didn't understand that. Can you rephrase your question?",
+          role: "model",
+          content: "I'm sorry, I didn't understand that. Can you rephrase your question?",
         },
       ]);
       return;
     }
-
-    const { steps, reward } = formState as HomeworkBuddyOutput;
-    const newAiMessages: Message[] = [];
-
-    if (steps) {
-      steps.forEach((step) => {
-        newAiMessages.push({
-          id: messageIdCounter.current++,
-          type: "ai-step",
-          text: step,
-        });
-      });
-    }
-
-    if (reward) {
-      newAiMessages.push({
+    
+    if (state.message) {
+       const newAiMessage: Message = {
         id: messageIdCounter.current++,
-        type: "ai-reward",
-        text: reward,
-      });
+        role: "model",
+        content: state.message,
+      };
 
-      if (reward.includes("⭐") || reward.toLowerCase().includes("great job")) {
+      setConversation((prev) => [...prev, newAiMessage]);
+
+      if (state.message.includes("⭐") || state.message.toLowerCase().includes("great job")) {
         setStarCount((prev) => prev + 1);
       }
     }
-
-    let messageIndex = 0;
-    const addMessageWithDelay = () => {
-      if (messageIndex < newAiMessages.length) {
-        setConversation((prev) => [...prev, newAiMessages[messageIndex]]);
-        messageIndex++;
-        setTimeout(addMessageWithDelay, 900);
-      }
-    };
-    addMessageWithDelay();
+    
     formRef.current?.reset();
-
-  }, [formState, toast]);
+  }, [state, toast]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -106,6 +85,14 @@ export function HomeworkPal() {
       <span className="sr-only">stars earned</span>
     </div>
   );
+
+  const getMessageType = (message: Message) => {
+    if (message.role === 'user') return 'user';
+    if (message.content.includes("⭐") || message.content.toLowerCase().includes("great job")) {
+      return 'ai-reward';
+    }
+    return 'ai-step';
+  }
 
   return (
     <Card className="w-full max-w-2xl mx-auto shadow-2xl rounded-2xl overflow-hidden flex flex-col h-[85vh]">
@@ -124,15 +111,17 @@ export function HomeworkPal() {
       <CardContent className="flex-1 p-0">
         <ScrollArea className="h-full">
           <div className="p-6 space-y-6">
-            {conversation.map((msg) => (
+            {conversation.map((msg) => {
+              const messageType = getMessageType(msg);
+              return (
               <div
                 key={msg.id}
                 className={cn(
                   "flex items-start gap-3 animate-in fade-in slide-in-from-bottom-4 duration-500",
-                  msg.type === "user" ? "justify-end" : "justify-start"
+                  messageType === "user" ? "justify-end" : "justify-start"
                 )}
               >
-                {msg.type !== "user" && (
+                {messageType !== "user" && (
                    <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0">
                     <Bot className="w-5 h-5 text-primary-foreground" />
                    </div>
@@ -140,22 +129,22 @@ export function HomeworkPal() {
                 <div
                   className={cn(
                     "max-w-[80%] rounded-2xl px-4 py-3 text-sm md:text-base",
-                    msg.type === "user"
+                    messageType === "user"
                       ? "bg-primary text-primary-foreground rounded-br-none"
                       : "bg-muted text-muted-foreground rounded-bl-none",
-                    msg.type === "ai-reward" && "bg-accent/80 text-accent-foreground"
+                    messageType === "ai-reward" && "bg-accent/80 text-accent-foreground"
                   )}
                 >
-                  {msg.type === 'ai-reward' && <Lightbulb className="inline-block mr-2 w-4 h-4" />}
-                  {msg.text}
+                  {messageType === 'ai-reward' && <Lightbulb className="inline-block mr-2 w-4 h-4" />}
+                  {msg.content}
                 </div>
-                 {msg.type === "user" && (
+                 {messageType === "user" && (
                    <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center shrink-0">
                     <User className="w-5 h-5 text-secondary-foreground" />
                    </div>
                 )}
               </div>
-            ))}
+            )})}
             {isPending && (
               <div className="flex items-start gap-3">
                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0">
@@ -178,11 +167,20 @@ export function HomeworkPal() {
             const problem = formData.get("problem") as string;
             if (!problem.trim()) return;
 
-            setConversation((prev) => [
-              ...prev,
-              { id: messageIdCounter.current++, type: "user", text: problem },
-            ]);
-            formAction(formData);
+            const newUserMessage: Message = {
+              id: messageIdCounter.current++,
+              role: 'user',
+              content: problem
+            };
+            
+            const newConversation = [...conversation, newUserMessage];
+            setConversation(newConversation);
+
+            const historyForAction = newConversation.map(m => ({role: m.role, content: m.content}));
+            
+            const newFormData = new FormData();
+            newFormData.append('history', JSON.stringify(historyForAction));
+            formAction(newFormData);
           }}
           className="flex items-center w-full gap-2"
         >

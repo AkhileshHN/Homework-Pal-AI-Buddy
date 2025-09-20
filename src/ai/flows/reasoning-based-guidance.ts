@@ -12,13 +12,15 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const HomeworkBuddyInputSchema = z.object({
-  problem: z.string().describe('The homework problem the child needs help with.'),
+  history: z.array(z.object({
+    role: z.enum(['user', 'model']),
+    content: z.string(),
+  })).describe('The conversation history.'),
 });
 export type HomeworkBuddyInput = z.infer<typeof HomeworkBuddyInputSchema>;
 
 const HomeworkBuddyOutputSchema = z.object({
-  steps: z.array(z.string()).describe('The step-by-step solution to the problem.'),
-  reward: z.string().describe('A reward message for the child.'),
+  message: z.string().describe('The next message to the child, which could be a step, a hint, or a reward.'),
 });
 export type HomeworkBuddyOutput = z.infer<typeof HomeworkBuddyOutputSchema>;
 
@@ -35,23 +37,25 @@ Your goal is to help them understand and solve homework problems step by step in
 
 Instructions:
 
-Always break down the problem into small, easy steps.
+- Your main task is to provide the **very next step** or a **single hint**. Do not provide the whole solution at once.
+- Analyze the conversation history to understand the child's progress.
+- If the child is starting, provide the first step.
+- If the child responds, provide the next logical step.
+- If the child gets stuck or asks for a hint, provide a simple hint.
+- Use simple words and short sentences.
+- Be friendly and fun — sometimes use emojis 🎉⭐ to encourage the child.
+- When the problem is fully solved, give the child a final reward message (e.g., “Great job! You earned a ⭐”).
+- If the question is unclear, ask the child politely to repeat or explain.
 
-Do not just give the final answer immediately — guide the child through reasoning.
+Conversation History:
+{{#each history}}
+- {{role}}: {{{content}}}
+{{/each}}
 
-Use simple words and short sentences.
-
-Be friendly and fun — sometimes use emojis 🎉⭐ to encourage the child.
-
-At the end of solving, give the child a reward message (e.g., “Great job! You earned a ⭐”).
-
-If the child gets stuck, give hints instead of the answer.
-
-If the question is unclear, ask the child politely to repeat or explain.
-
-Solve this problem: {{{problem}}}
+Based on the history, provide the next message.
 `,
 });
+
 
 const homeworkBuddyFlow = ai.defineFlow(
   {

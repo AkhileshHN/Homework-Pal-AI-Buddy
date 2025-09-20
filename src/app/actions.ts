@@ -9,33 +9,40 @@ import {
 import { z } from "zod";
 
 const inputSchema = z.object({
-  problem: z.string().min(1, "Please enter a problem."),
+  history: z.array(z.object({
+    role: z.enum(['user', 'model']),
+    content: z.string(),
+  })),
 });
 
 export async function getHomeworkHelp(
   prevState: any,
   formData: FormData
-): Promise<HomeworkBuddyOutput | { error: string }> {
-  const validatedFields = inputSchema.safeParse({
-    problem: formData.get("problem"),
-  });
+): Promise<{ message: string; error?: string } | { error: string, message?: undefined }> {
+  const historyStr = formData.get("history") as string;
+  
+  let history = [];
+  try {
+    history = JSON.parse(historyStr);
+  } catch (e) {
+    return { error: 'Invalid history format.' };
+  }
+
+  const validatedFields = inputSchema.safeParse({ history });
 
   if (!validatedFields.success) {
     return {
-      error: validatedFields.error.flatten().fieldErrors.problem?.[0] || "Invalid input."
+      error: validatedFields.error.flatten().fieldErrors.history?.[0] || "Invalid input."
     };
   }
 
   try {
-    const output = await homeworkBuddy({ problem: validatedFields.data.problem });
+    const output = await homeworkBuddy({ history: validatedFields.data.history });
     return output;
   } catch (error) {
     console.error("Error getting homework help:", error);
     return {
-      steps: [
-        "Oops! I had a little trouble thinking. Could you please ask your question again?",
-      ],
-      reward: "Let's try that one more time! 🚀",
+      message: "Oops! I had a little trouble thinking. Could you please ask your question again?",
     };
   }
 }
