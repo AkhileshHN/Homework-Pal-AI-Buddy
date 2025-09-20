@@ -10,6 +10,7 @@ import {
   CardContent,
   CardFooter,
   CardHeader,
+  CardTitle,
 } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
@@ -26,7 +27,13 @@ type Message = {
 
 const initialState: { message?: string; audio?: string; error?: string } | null = null;
 
-export function HomeworkPal() {
+type HomeworkPalProps = {
+  initialMessage?: string;
+  assignmentTitle?: string;
+};
+
+
+export function HomeworkPal({ initialMessage, assignmentTitle }: HomeworkPalProps) {
   const [state, formAction, isPending] = useActionState(getHomeworkHelp, initialState);
   const [conversation, setConversation] = useState<Message[]>([]);
   const [starCount, setStarCount] = useState(0);
@@ -35,6 +42,23 @@ export function HomeworkPal() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const audioRef = useRef<HTMLAudioElement>(null);
+
+  useEffect(() => {
+    if (initialMessage && conversation.length === 0) {
+      const firstMessage: Message = {
+        id: messageIdCounter.current++,
+        role: "model",
+        content: initialMessage,
+      };
+      setConversation([firstMessage]);
+       if (audioRef.current) {
+        // This is a bit of a hack to play the initial message
+        // A better way would be to get the audio from the server as well
+        const utterance = new SpeechSynthesisUtterance(initialMessage);
+        speechSynthesis.speak(utterance);
+      }
+    }
+  }, [initialMessage, conversation.length]);
 
 
   useEffect(() => {
@@ -106,8 +130,8 @@ export function HomeworkPal() {
         <div className="flex items-center gap-3">
           <PalAvatar className="w-12 h-12" />
           <div>
-            <h1 className="text-xl font-bold font-headline">Homework Pal</h1>
-            <p className="text-sm text-muted-foreground">Your friendly AI study buddy</p>
+            <CardTitle className="text-xl font-bold font-headline">{assignmentTitle || 'Homework Pal'}</CardTitle>
+            <p className="text-sm text-muted-foreground">{assignmentTitle ? 'Let the adventure begin!' : 'Your friendly AI study buddy'}</p>
           </div>
         </div>
         <div className="animate-star-pop">
@@ -191,8 +215,9 @@ export function HomeworkPal() {
           className="flex items-center w-full gap-2"
         >
           <Textarea
+            suppressHydrationWarning
             name="problem"
-            placeholder="Type your homework question here..."
+            placeholder="What is your answer?"
             className="flex-1 resize-none bg-background text-base"
             rows={1}
             disabled={isPending}
