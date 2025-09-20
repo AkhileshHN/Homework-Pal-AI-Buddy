@@ -30,9 +30,14 @@ export default async function PlayPage() {
 
   return (
     <div className="container mx-auto p-4 md:p-8">
-      <header className="mb-8 text-center">
-        <h1 className="text-4xl font-bold font-headline">Select Your Quest!</h1>
-        <p className="text-muted-foreground">An adventure in learning awaits.</p>
+      <header className="flex items-center justify-between mb-8">
+        <div className="text-left">
+            <h1 className="text-4xl font-bold font-headline">Select Your Quest!</h1>
+            <p className="text-muted-foreground">An adventure in learning awaits.</p>
+        </div>
+        <Button asChild>
+            <Link href="/parent">Go to Parent Dashboard</Link>
+        </Button>
       </header>
       
       {assignments.length > 0 ? (
