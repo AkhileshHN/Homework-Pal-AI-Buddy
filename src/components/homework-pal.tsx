@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { useActionState } from "react";
 import { getHomeworkHelp } from "@/app/actions";
 import { Button } from "@/components/ui/button";
@@ -54,7 +54,10 @@ type HomeworkPalProps = {
 };
 
 export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, assignmentDescription, assignmentId, starsToAward = 1 }: HomeworkPalProps) {
-  const [state, formAction, isPending] = useActionState(getHomeworkHelp, initialState);
+  const [state, formAction, isFormPending] = useActionState(getHomeworkHelp, initialState);
+  const [isTransitioning, startTransition] = useTransition();
+  const isPending = isFormPending || isTransitioning;
+
   const [conversation, setConversation] = useState<Message[]>([]);
   const [currentStage, setCurrentStage] = useState<'LEARNING' | 'QUIZ' | 'REWARD'>('LEARNING');
   const [starCount, setStarCount] = useState(0);
@@ -180,25 +183,30 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
 
     const newUserMessage: Message = {
       id: messageIdCounter.current++,
-      role: 'user',
+      role: "user",
       content: option,
     };
-    
-    setConversation((prev) => [...prev, newUserMessage]);
-    
-    const historyForAction = [...conversation, newUserMessage].map(m => ({ role: m.role, content: m.content }));
-    
+    const newConversation = [...conversation, newUserMessage];
+    setConversation(newConversation);
+
+    const historyForAction = newConversation.map((m) => ({
+      role: m.role,
+      content: m.content,
+    }));
+
     const formData = new FormData();
-    formData.append('problem', option);
-    formData.append('history', JSON.stringify(historyForAction));
-    formData.append('assignmentId', assignmentId);
-    formData.append('starsToAward', String(starsToAward));
+    formData.append("problem", option);
+    formData.append("history", JSON.stringify(historyForAction));
+    formData.append("assignmentId", assignmentId);
+    formData.append("starsToAward", String(starsToAward));
     if (assignmentDescription) {
-      formData.append('assignment', assignmentDescription);
+      formData.append("assignment", assignmentDescription);
     }
-    
-    formAction(formData);
-  }
+
+    startTransition(() => {
+        formAction(formData);
+    });
+  };
 
   const handleMicClick = () => {
     if (!speechRecognition) {
@@ -420,7 +428,7 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
                     <Button
                         key={index}
                         type="button"
-                        variant={isSelected ? "default" : (isSkipButton ? "secondary" : "outline")}
+                        variant={isPending && isSelected ? "default" : (isSkipButton ? "secondary" : "outline")}
                         className={cn("h-auto py-3 text-base justify-start text-left", isSkipButton && "md:col-span-2")}
                         onClick={() => handleQuizOptionClick(option)}
                         disabled={isPending}
@@ -477,5 +485,7 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
     </Card>
   );
 }
+
+    
 
     
