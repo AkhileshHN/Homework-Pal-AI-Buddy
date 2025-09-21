@@ -1,12 +1,12 @@
 {
   "assignments": [
     {
-      "id": "1758479186530",
+      "id": "1758479287285",
       "title": "Math Detective: Addition",
-      "description": "##LEARNING##\nAdding numbers means putting them together to find a total. When you add, the number gets bigger! For example, if you have 3 apples and someone gives you 2 more, you now have 5 apples because 3 + 2 = 5. Let's practice adding numbers up to 10!\n\n##QUIZ##\n1. What is 2 + 3?A) 4B) 5*C) 6D) 72. If you have 4 balls and find 1 more, how many do you have?A) 3B) 4C) 5*D) 63. What is 5 + 5?A) 8B) 9C) 10*D) 114. Add 6 and 2.A) 7B) 8*C) 9D) 105. Which sum is equal to 7?A) 3 + 3B) 4 + 2C) 5 + 2*D) 6 + 26. What is 1 + 8?A) 6B) 7C) 8D) 9*7. If you have 3 cookies and get 4 more, how many do you have in total?A) 5B) 6C) 7*D) 8",
-      "createdAt": "2025-09-21T18:26:26.530Z",
+      "description": "##LEARNING##\nAdding numbers means putting them together to find out how many you have in total. For example, if you have 3 apples and you get 2 more, you add 3 and 2 to get 5 apples. We're going to practice adding numbers that make a total of 10 or less. Just count them all together to find the sum!\n\n##QUIZ##\n1. What is 2 + 3?\nA) 4\nB) 5*\nC) 6\nD) 7\n2. If you have 4 toys and get 1 more, how many do you have now?\nA) 3\nB) 5*\nC) 6\nD) 7\n3. Add 6 and 2. What is the sum?\nA) 7\nB) 8*\nC) 9\nD) 10\n4. Which of these adds up to 10?\nA) 5 + 3\nB) 4 + 4\nC) 7 + 3*\nD) 6 + 1\n5. What is 1 + 8?\nA) 9*\nB) 10\nC) 7\nD) 8\n6. If you see 3 birds on a branch and 5 more fly to join them, how many birds are there in total?\nA) 6\nB) 7\nC) 8*\nD) 9\n7. What is 4 + 5?\nA) 7\nB) 8\nC) 9*\nD) 10\n8. Which addition problem equals 6?\nA) 2 + 3\nB) 4 + 2*\nC) 5 + 2\nD) 3 + 4\n9. What is 0 + 7?\nA) 0\nB) 6\nC) 7*\nD) 8\n10. If you have 5 stickers and your friend gives you 5 more, how many stickers do you have?\nA) 8\nB) 9\nC) 10*\nD) 11",
+      "createdAt": "2025-09-21T18:28:07.285Z",
       "status": "new",
-      "stars": 5
+      "stars": 1
     }
   ]
 }
