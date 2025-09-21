@@ -134,6 +134,11 @@ const createAssignmentSchema = z.object({
 });
 
 export async function createAssignment(prevState: any, formData: FormData) {
+  // Prevent creation in a read-only serverless environment
+  if (process.env.NETLIFY) {
+      return { error: { _form: ["Assignment creation is disabled in this hosted environment. A database is required to persist data."] } };
+  }
+
   const validatedFields = createAssignmentSchema.safeParse({
     title: formData.get('title'),
     description: formData.get('description'),
@@ -145,11 +150,6 @@ export async function createAssignment(prevState: any, formData: FormData) {
       error: validatedFields.error.flatten().fieldErrors,
     };
   }
-  
-  if (process.env.VERCEL_ENV === 'production' || process.env.NETLIFY) {
-      return { error: { _form: ["Assignment creation is disabled in this hosted environment. A database is required to persist data."] } };
-  }
-
 
   const { title, description, stars } = validatedFields.data;
 
@@ -226,7 +226,8 @@ export async function updateAssignmentStatus(id: string, status: 'new' | 'inprog
 }
 
 export async function deleteAssignment(id: string) {
-    if (process.env.VERCEL_ENV === 'production' || process.env.NETLIFY) {
+    // Prevent deletion in a read-only serverless environment
+    if (process.env.NETLIFY) {
       return { error: 'Assignment deletion is disabled in this hosted environment. A database is required to persist data.' };
     }
     try {
