@@ -65,7 +65,6 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
   const router = useRouter();
   const messageIdCounter = useRef(0);
   const formRef = useRef<HTMLFormElement>(null);
-  const hiddenInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -175,10 +174,9 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
   }
 
   const handleQuizOptionClick = (option: string) => {
-      if (hiddenInputRef.current) {
-        hiddenInputRef.current.value = option;
-        formRef.current?.requestSubmit();
-      }
+      const newFormData = new FormData(formRef.current!);
+      newFormData.set('problem', option);
+      handleFormSubmit(newFormData);
   }
 
   const handleMicClick = () => {
@@ -222,10 +220,9 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
 
     recognitionRef.current.onresult = (event: any) => {
         const transcript = event.results[0][0].transcript;
-        if (hiddenInputRef.current) {
-            hiddenInputRef.current.value = transcript;
-            formRef.current?.requestSubmit();
-        }
+        const newFormData = new FormData(formRef.current!);
+        newFormData.set('problem', transcript);
+        handleFormSubmit(newFormData);
     };
 
     recognitionRef.current.start();
@@ -385,10 +382,9 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
         ) : (
         <form
           ref={formRef}
-          action={(formData) => handleFormSubmit(formData)}
+          action={handleFormSubmit}
           className="flex items-center w-full gap-2"
         >
-           <input type="hidden" name="problem" ref={hiddenInputRef} />
           {currentStage === 'LEARNING' ? (
              <Button type="submit" className="w-full" disabled={isPending}>
                 {isPending ? <LoaderCircle className="animate-spin" /> : 'Start Quiz!'}
@@ -415,7 +411,6 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
           ) : (
             <>
               <Textarea
-                suppressHydrationWarning
                 name="problem"
                 placeholder={"What is your answer?"}
                 className="flex-1 resize-none bg-background text-base"
@@ -424,10 +419,7 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
-                    if(formRef.current) {
-                      hiddenInputRef.current!.value = (e.target as HTMLTextAreaElement).value;
-                      formRef.current.requestSubmit();
-                    }
+                    formRef.current?.requestSubmit();
                   }
                 }}
               />
@@ -445,14 +437,7 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
-              <Button type="submit" size="icon" disabled={isPending} onClick={() => {
-                if (formRef.current) {
-                    const textarea = formRef.current.querySelector('textarea[name="problem"]');
-                    if (textarea) {
-                      hiddenInputRef.current!.value = (textarea as HTMLTextAreaElement).value;
-                    }
-                }
-              }}>
+              <Button type="submit" size="icon" disabled={isPending}>
                 {isPending ? <LoaderCircle className="w-5 h-5 animate-spin"/> : <Send className="w-5 h-5" />}
                 <span className="sr-only">Send message</span>
               </Button>
