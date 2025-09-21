@@ -1,10 +1,10 @@
 {
   "assignments": [
     {
-      "id": "1758478480668",
+      "id": "1758478651211",
       "title": "Math Detective: Addition",
-      "description": "##LEARNING##\nAdding numbers means putting them together to find a new, bigger number called the sum. For example, if you have 3 apples and get 2 more, you add them: 3 + 2 = 5 apples. We will practice adding numbers, and your answers will always be 10 or less!\n\n##QUIZ##\n1. What is 2 + 3?\n  A) 4\n  B) 5*\n  C) 6\n  D) 7\n2. What is 5 + 1?\n  A) 4\n  B) 5\n  C) 6*\n  D) 7\n3. What is 4 + 4?\n  A) 7\n  B) 8*\n  C) 9\n  D) 10\n4. What is 6 + 2?\n  A) 7\n  B) 8*\n  C) 9\n  D) 10\n5. What is 1 + 7?\n  A) 6\n  B) 7\n  C) 8*\n  D) 9\n6. What is 3 plus 6?\n  A) 8\n  B) 9*\n  C) 10\n  D) 7\n7. If you have 2 cookies and get 8 more, how many do you have in total?\n  A) 9\n  B) 10*\n  C) 8\n  D) 7",
-      "createdAt": "2025-09-21T18:14:40.668Z",
+      "description": "##LEARNING##\nAdding numbers means putting them together to find out how many you have in total. When we add, our answer usually gets bigger. For example, if you have 3 blocks and add 2 more blocks, you now have 5 blocks altogether. We can use our fingers or count pictures to help us add up to 10.\n\n##QUIZ##\n1. What is 3 + 2?\n  A) 4\n  B) 5*\n  C) 6\n  D) 7\n2. What is 5 + 4?\n  A) 8\n  B) 7\n  C) 9*\n  D) 10\n3. What is 6 plus 1?\n  A) 5\n  B) 7*\n  C) 8\n  D) 9\n4. If you have 2 apples and get 3 more, how many apples do you have in total?\n  A) 4\n  B) 5*\n  C) 6\n  D) 7\n5. What is 7 + 3?\n  A) 9\n  B) 11\n  C) 10*\n  D) 8",
+      "createdAt": "2025-09-21T18:17:31.211Z",
       "status": "new",
       "stars": 1
     }
