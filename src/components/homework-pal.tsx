@@ -179,10 +179,12 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
       content: option,
     };
     
-    const newConversation = [...conversation, newUserMessage];
-    setConversation(newConversation);
+    // Update the UI immediately with the user's choice
+    setConversation((prev) => [...prev, newUserMessage]);
     
-    const historyForAction = newConversation.map(m => ({ role: m.role, content: m.content }));
+    // Construct the history for the action using the *new* conversation
+    const historyForAction = [...conversation, newUserMessage].map(m => ({ role: m.role, content: m.content }));
+    
     const formData = new FormData();
     formData.append('problem', option);
     formData.append('history', JSON.stringify(historyForAction));
@@ -192,6 +194,7 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
       formData.append('assignment', assignmentDescription);
     }
     
+    // Dispatch the server action
     formAction(formData);
   }
 
