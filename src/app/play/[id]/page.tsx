@@ -14,16 +14,31 @@ type Assignment = {
   stars: number;
 };
 
+const ASSIGNMENTS_FILE_PATH = path.join(process.cwd(), 'src/lib/assignments.json');
+
 async function getAssignment(id: string): Promise<Assignment | undefined> {
+  // Deployed environment (Netlify, Vercel, etc.)
+  if (process.env.ASSIGNMENTS_JSON) {
+    try {
+      const data = JSON.parse(process.env.ASSIGNMENTS_JSON);
+      return (data.assignments || []).find((a: Assignment) => a.id === id);
+    } catch (error) {
+      console.error("Error parsing assignments from environment variable:", error);
+      return undefined;
+    }
+  }
+
+  // Local development environment
   try {
-    const data = process.env.ASSIGNMENTS_JSON;
-    if (!data) return undefined;
-    const jsonData = JSON.parse(data);
-    const assignments = jsonData.assignments || [];
-    return assignments.find((a: Assignment) => a.id === id);
+    const fileContent = await fs.readFile(ASSIGNMENTS_FILE_PATH, 'utf-8');
+    const data = JSON.parse(fileContent);
+    return (data.assignments || []).find((a: Assignment) => a.id === id);
   } catch (error) {
-     console.error("Error parsing assignments from env var:", error);
-     return undefined;
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      return undefined;
+    }
+    console.error("Error reading local assignments file:", error);
+    return undefined;
   }
 }
 

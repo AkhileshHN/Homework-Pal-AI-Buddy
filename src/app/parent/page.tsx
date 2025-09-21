@@ -17,23 +17,40 @@ type Assignment = {
   stars: number;
 };
 
+const ASSIGNMENTS_FILE_PATH = path.join(process.cwd(), 'src/lib/assignments.json');
+
 async function getAssignments(): Promise<Assignment[]> {
-  try {
-    const data = process.env.ASSIGNMENTS_JSON;
-    if (!data) {
-        return [];
-    }
-    const jsonData = JSON.parse(data);
-    // Sort by creation date DESC
-    const assignments = (jsonData.assignments || []).sort((a: Assignment, b: Assignment) => {
+  // Deployed environment (Netlify, Vercel, etc.)
+  if (process.env.ASSIGNMENTS_JSON) {
+    try {
+      const data = JSON.parse(process.env.ASSIGNMENTS_JSON);
+      const assignments = (data.assignments || []).sort((a: Assignment, b: Assignment) => {
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
+      return assignments;
+    } catch (error) {
+      console.error("Error parsing assignments from environment variable:", error);
+      return [];
+    }
+  }
+
+  // Local development environment
+  try {
+    const fileContent = await fs.readFile(ASSIGNMENTS_FILE_PATH, 'utf-8');
+    const data = JSON.parse(fileContent);
+    const assignments = (data.assignments || []).sort((a: Assignment, b: Assignment) => {
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
     return assignments;
   } catch (error) {
-    console.error("Error parsing assignments from env var:", error);
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      return []; // File doesn't exist, which is fine.
+    }
+    console.error("Error reading local assignments file:", error);
     return [];
   }
 }
+
 
 const StatusIcon = ({ status }: { status: Assignment['status'] }) => {
     switch (status) {

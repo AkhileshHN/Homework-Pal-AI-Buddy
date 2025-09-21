@@ -32,31 +32,48 @@ type Assignment = {
   stars: number;
 };
 
-// In a serverless environment like Netlify, the filesystem is read-only.
-// We'll read assignments from an environment variable.
-// For a production app, you would replace this with a database.
-async function getAssignments(): Promise<{assignments: Assignment[]}> {
-  try {
-    const data = process.env.ASSIGNMENTS_JSON;
-    if (!data) {
-        return { assignments: [] };
+const ASSIGNMENTS_FILE_PATH = path.join(process.cwd(), 'src/lib/assignments.json');
+
+async function getAssignments(): Promise<{ assignments: Assignment[] }> {
+  // Deployed environment (Netlify, Vercel, etc.)
+  if (process.env.ASSIGNMENTS_JSON) {
+    try {
+      const data = JSON.parse(process.env.ASSIGNMENTS_JSON);
+      return { assignments: data.assignments || [] };
+    } catch (error) {
+      console.error("Error parsing assignments from environment variable:", error);
+      return { assignments: [] };
     }
-    const jsonData = JSON.parse(data);
-    return { assignments: jsonData.assignments || [] };
+  }
+
+  // Local development environment
+  try {
+    const fileContent = await fs.readFile(ASSIGNMENTS_FILE_PATH, 'utf-8');
+    const data = JSON.parse(fileContent);
+    return { assignments: data.assignments || [] };
   } catch (error) {
-    console.error("Error parsing assignments from environment variable:", error);
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      // File doesn't exist, return empty array
+      return { assignments: [] };
+    }
+    console.error("Error reading local assignments file:", error);
     return { assignments: [] };
   }
 }
 
-// In a real application, this would write to a database.
-// Since we're using environment variables, we can't persist changes at runtime.
-// We will log to the console to simulate the action.
 async function saveAssignments(assignments: { assignments: Assignment[] }) {
-    console.log("Simulating assignment save. In a real app, this would write to a database.");
-    console.log("Updated assignments would be:", JSON.stringify(assignments, null, 2));
-    // On Netlify/Vercel, we can't update env vars at runtime, so this is a mock.
-    // To persist changes, a database is required.
+  // In a serverless environment, we can't (and shouldn't) write to the filesystem.
+  if (process.env.NETLIFY || process.env.VERCEL) {
+    console.log("Simulating assignment save in serverless environment. Data is not persisted.");
+    return;
+  }
+
+  // For local development, write to the file.
+  try {
+    await fs.writeFile(ASSIGNMENTS_FILE_PATH, JSON.stringify(assignments, null, 2), 'utf-8');
+  } catch (error) {
+    console.error("Error writing local assignments file:", error);
+  }
 }
 
 
@@ -104,8 +121,8 @@ export async function getHomeworkHelp(
     }
     
     let audio = '';
-    // Only generate audio in production to avoid hitting rate limits in dev
-    if (process.env.NODE_ENV === 'production') {
+    // Only generate audio if not in a local dev environment to avoid hitting rate limits
+    if (process.env.NODE_ENV === 'production' || process.env.NETLIFY || process.env.VERCEL) {
         try {
             const audioMessage = output.quizQuestion ? `${output.message} ${output.quizQuestion}` : output.message;
             const { audio: audioData } = await textToSpeech(audioMessage);
@@ -135,7 +152,7 @@ const createAssignmentSchema = z.object({
 
 export async function createAssignment(prevState: any, formData: FormData) {
   // Prevent creation in a read-only serverless environment
-  if (process.env.NETLIFY) {
+  if (process.env.NETLIFY || process.env.VERCEL) {
       return { error: { _form: ["Assignment creation is disabled in this hosted environment. A database is required to persist data."] } };
   }
 
@@ -194,7 +211,7 @@ export async function getGamifiedStory(input: { assignment: string }) {
     const story = await generateStory({ assignment: validatedFields.data.assignment });
     let audio: TextToSpeechOutput = { audio: '' };
     // Only generate audio in production to avoid hitting rate limits in dev
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === 'production' || process.env.NETLIFY || process.env.VERCEL) {
         if (story.story) {
             try {
                 audio = await textToSpeech(story.story);
@@ -227,7 +244,7 @@ export async function updateAssignmentStatus(id: string, status: 'new' | 'inprog
 
 export async function deleteAssignment(id: string) {
     // Prevent deletion in a read-only serverless environment
-    if (process.env.NETLIFY) {
+    if (process.env.NETLIFY || process.env.VERCEL) {
       return { error: 'Assignment deletion is disabled in this hosted environment. A database is required to persist data.' };
     }
     try {
