@@ -1,10 +1,10 @@
 {
   "assignments": [
     {
-      "id": "1758479287285",
-      "title": "Math Detective: Addition",
-      "description": "##LEARNING##\nAdding numbers means putting them together to find out how many you have in total. For example, if you have 3 apples and you get 2 more, you add 3 and 2 to get 5 apples. We're going to practice adding numbers that make a total of 10 or less. Just count them all together to find the sum!\n\n##QUIZ##\n1. What is 2 + 3?\nA) 4\nB) 5*\nC) 6\nD) 7\n2. If you have 4 toys and get 1 more, how many do you have now?\nA) 3\nB) 5*\nC) 6\nD) 7\n3. Add 6 and 2. What is the sum?\nA) 7\nB) 8*\nC) 9\nD) 10\n4. Which of these adds up to 10?\nA) 5 + 3\nB) 4 + 4\nC) 7 + 3*\nD) 6 + 1\n5. What is 1 + 8?\nA) 9*\nB) 10\nC) 7\nD) 8\n6. If you see 3 birds on a branch and 5 more fly to join them, how many birds are there in total?\nA) 6\nB) 7\nC) 8*\nD) 9\n7. What is 4 + 5?\nA) 7\nB) 8\nC) 9*\nD) 10\n8. Which addition problem equals 6?\nA) 2 + 3\nB) 4 + 2*\nC) 5 + 2\nD) 3 + 4\n9. What is 0 + 7?\nA) 0\nB) 6\nC) 7*\nD) 8\n10. If you have 5 stickers and your friend gives you 5 more, how many stickers do you have?\nA) 8\nB) 9\nC) 10*\nD) 11",
-      "createdAt": "2025-09-21T18:28:07.285Z",
+      "id": "1758481179281",
+      "title": "Science Explorer: The Seasons",
+      "description": "##LEARNING##\nThe Earth has four main seasons: Spring, Summer, Autumn (also called Fall), and Winter. Each season brings different weather and changes to nature. For example, flowers bloom in Spring, Summer is usually the hottest, leaves change colors in Autumn, and Winter is often cold with snow.\n\n##QUIZ##\n1. How many main seasons does Earth have? A) Two B) Three C) Four* D) Five 2. Which season is known for flowers blooming? A) Summer B) Autumn C) Winter D) Spring* 3. In which season do leaves often change color and fall from trees? A) Spring B) Summer C) Autumn* D) Winter 4. Which season is usually the coldest? A) Spring B) Summer C) Autumn D) Winter* 5. Which season is usually the hottest? A) Spring B) Summer* C) Autumn D) Winter 6. What kind of weather might you expect in Winter? A) Hot and sunny B) Warm and rainy C) Cold and snowy* D) Mild and breezy",
+      "createdAt": "2025-09-21T18:59:39.281Z",
       "status": "inprogress",
       "stars": 1
     }

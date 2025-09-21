@@ -365,8 +365,8 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
                   )}
                 >
                   {messageType === 'ai-reward' && <Trophy className="inline-block mr-2 w-4 h-4" />}
-                   <p className="font-bold whitespace-pre-wrap">{msg.quizQuestion}</p>
                   <p className="whitespace-pre-wrap">{msg.content}</p>
+                  {msg.quizQuestion && <p className="font-bold whitespace-pre-wrap mt-2">{msg.quizQuestion}</p>}
                 </div>
                  {messageType === "user" && (
                    <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center shrink-0">
@@ -485,7 +485,3 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
     </Card>
   );
 }
-
-    
-
-    

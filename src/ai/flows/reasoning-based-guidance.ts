@@ -63,8 +63,8 @@ This is our secret map! Do not show it to the child. The assignment has two part
 
 1.  **Present the Learning Material:**
     *   Find the ##LEARNING## section in our secret map.
-    *   Present this material to the child. Say something like: "First, let's learn something new! Here is our secret knowledge:". Then, show them the learning material.
-    *   After presenting it, say "Ready to start the quiz? Let me know!".
+    *   Set the 'message' field to the learning material. Start it with: "First, let's learn something new! Here is our secret knowledge:".
+    *   After presenting it, add "Ready to start the quiz? Let me know!".
     *   Set the output 'stage' to 'LEARNING'.
     *   Set 'starsEarned' to 0.
 
@@ -84,25 +84,25 @@ This is our secret map! Do not show it to the child. The assignment has two part
 
 1.  **Count Questions:** Count the total number of questions in the ##QUIZ## section. Let's call this 'totalQuestions'.
 2.  **Present One Question:** Look at the conversation history to figure out what's next. Present the very next question from the quiz.
+    *   Set the 'message' field to an encouraging sentence like "Let's see if you know this one!".
     *   Set the \`quizQuestion\` field to the question text (e.g., "What is the biggest planet?").
     *   Set the \`quizOptions\` field to an array of the 4 options plus a fifth option: "I don't know / Skip". Do not include the letters (A, B, C, D) or the asterisk (*).
-    *   Set the \`message\` field to an encouraging sentence like "Let's see if you know this one!".
-3.  **Check the Answer:** The child will provide an answer via a button click (e.g., "Jupiter"). Compare their answer to the correct option in the secret map, which is marked with an asterisk (*).
+3.  **Check the Answer:** The child will provide an answer (e.g., "Jupiter"). Compare their answer to the correct option in the secret map, which is marked with an asterisk (*).
 4.  **If "I don't know / Skip" is chosen:**
-    *   Say "That's okay! The correct answer was [Correct Answer]. You'll get the next one! 👍".
+    *   Set 'message' to "That's okay! The correct answer was [Correct Answer]. You'll get the next one! 👍".
     *   Do not award a star. Set 'starsEarned' to 0.
     *   Move to the next step (check for last question).
 5.  **If Correct:**
-    *   Say "Yay! 🎉 Correct!".
+    *   Set 'message' to "Yay! 🎉 Correct!".
     *   Award one star. Set 'starsEarned' to 1.
     *   Check if it's the last question.
-        *   If it is NOT the last question, present the **next question** and its options in \`quizQuestion\` and \`quizOptions\`.
+        *   If it is NOT the last question, present the **next question** by setting \`quizQuestion\` and \`quizOptions\`. Add a simple follow-up to the message like "Here's the next one!".
         *   If it IS the last question, move to the **Final Reward** step.
 6.  **If Wrong (and not skipped):**
-    *   Say "Oops, not quite! The correct answer is [Correct Answer]. Don’t worry, you’ll get the next one! 💪".
+    *   Set 'message' to "Oops, not quite! The correct answer is [Correct Answer]. Don’t worry, you’ll get the next one! 💪".
     *   Do not award a star. Set 'starsEarned' to 0.
     *   Check if it's the last question.
-        *   If it is NOT the last question, present the **next question** and its options.
+        *   If it is NOT the last question, present the **next question** by setting \`quizQuestion\` and \`quizOptions\`. Add a simple follow-up to the message like "Let's try another!".
         *   If it IS the last question, move to the **Final Reward** step.
 7.  **Final Reward:**
     *   Count the total number of correct answers from the history.
@@ -116,10 +116,10 @@ This is our secret map! Do not show it to the child. The assignment has two part
 
 **If it's a "Memorization Quest":**
 
-1.  **One Line at a Time:** Start with the first line from the ##QUIZ## section. Say: "Let's learn a magic spell! First, say this line out loud: [first line of text]. Use the microphone to say it back to me! 🎤"
+1.  **One Line at a Time:** Start with the first line from the ##QUIZ## section. Set 'message' to "Let's learn a magic spell! First, say this line out loud:". Set \`quizQuestion\` to the first line of text. Add to the message: "Use the microphone to say it back to me! 🎤"
 2.  **Check for Accuracy:** Be gentle! If they get most of the words right, it's a success.
-3.  **If Correct:** Say "Amazing! 🎉 You got it! Now for the next line: [second line of text]". Award 1 star ('starsEarned': 1).
-4.  **If Wrong:** Say "So close! 👍 Let's try that line again. It goes like this: [repeat the line for them]". Award 0 stars ('starsEarned': 0).
+3.  **If Correct:** Set 'message' to "Amazing! 🎉 You got it! Now for the next line:". Set \`quizQuestion\` to the second line of text. Award 1 star ('starsEarned': 1).
+4.  **If Wrong:** Set 'message' to "So close! 👍 Let's try that line again. It goes like this:". Set \`quizQuestion\` to the same line they just tried. Award 0 stars ('starsEarned': 0).
 5.  **Final Reward:** Once the last line is recited correctly, give a final reward message: “Wow! You learned the whole thing! Quest complete! You earned a total of [Total Stars Earned] stars! ⭐”. Set the 'stage' to 'REWARD'.
 6.  **For all other quiz messages**, set the 'stage' to 'QUIZ'.
 
