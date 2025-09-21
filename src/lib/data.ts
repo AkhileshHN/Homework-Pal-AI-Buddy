@@ -20,7 +20,8 @@ const sortAssignments = (assignments: Assignment[]) => {
 
 export async function getAssignments(): Promise<Assignment[]> {
   // Deployed environment (Netlify, Vercel, etc.)
-  if (process.env.ASSIGNMENTS_JSON) {
+  // Check if the environment variable is present and not an empty string.
+  if (process.env.ASSIGNMENTS_JSON && process.env.ASSIGNMENTS_JSON.trim() !== '') {
     try {
       // The environment variable is expected to be a stringified JSON object: `{"assignments": [...]}`
       const data = JSON.parse(process.env.ASSIGNMENTS_JSON);
