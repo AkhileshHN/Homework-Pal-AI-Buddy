@@ -69,4 +69,3 @@ export async function saveAssignments(assignments: { assignments: Assignment[] }
     console.error("Error writing local assignments file:", error);
   }
 }
-
