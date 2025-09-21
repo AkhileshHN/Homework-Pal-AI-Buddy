@@ -137,7 +137,7 @@ export async function createAssignment(prevState: any, formData: FormData) {
     return { success: true };
   } catch (error) {
     console.error('Failed to create assignment:', error);
-    return { error: { _form: ['Failed to create assignment.'] } };
+    return { error: { _form: ['Failed to create assignment. Please try again.'] } };
   }
 }
 
