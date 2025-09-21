@@ -20,15 +20,14 @@ const sortAssignments = (assignments: Assignment[]) => {
 
 export async function getAssignments(): Promise<Assignment[]> {
   // Deployed environment (Netlify, Vercel, etc.)
-  // Check if the environment variable is a non-empty string before parsing.
-  if (process.env.ASSIGNMENTS_JSON && process.env.ASSIGNMENTS_JSON.trim().length > 2) {
+  if (process.env.ASSIGNMENTS_JSON) {
     try {
       // The environment variable is expected to be a stringified JSON object: `{"assignments": [...]}`
       const data = JSON.parse(process.env.ASSIGNMENTS_JSON);
       return sortAssignments(data.assignments || []);
     } catch (error) {
-      console.error("Error parsing assignments from environment variable:", error);
-      // Fallback to local file if parsing fails
+      console.error("Error parsing assignments from environment variable, falling back to local file:", error);
+      // If parsing fails, proceed to the fallback below.
     }
   }
 
