@@ -9,7 +9,6 @@ import {
 import { textToSpeech, TextToSpeechOutput } from "@/ai/flows/text-to-speech";
 import { z } from "zod";
 import { generateStory } from "@/ai/flows/story-generator";
-import { revalidatePath } from "next/cache";
 import { designQuest } from "@/ai/flows/design-quest";
 import { getAssignments, saveAssignments, type Assignment } from "@/lib/data";
 
@@ -53,7 +52,6 @@ export async function getHomeworkHelp(
       stars: starsToAward,
     });
     
-    // If the quest is over, mark it as completed.
     if (output.stage === 'REWARD') {
         const assignments = await getAssignments();
         const assignmentIndex = assignments.findIndex(a => a.id === assignmentId);
@@ -61,12 +59,9 @@ export async function getHomeworkHelp(
           assignments[assignmentIndex].status = 'completed';
           await saveAssignments({ assignments });
         }
-        revalidatePath('/parent');
-        revalidatePath('/play');
     }
     
     let audio = '';
-    // Only generate audio if not in a local dev environment to avoid hitting rate limits
     if (process.env.NODE_ENV === 'production' || process.env.NETLIFY || process.env.VERCEL) {
         try {
             const audioMessage = output.quizQuestion ? `${output.message} ${output.quizQuestion}` : output.message;
@@ -96,7 +91,6 @@ const createAssignmentSchema = z.object({
 });
 
 export async function createAssignment(prevState: any, formData: FormData) {
-  // Prevent creation in a read-only serverless environment
   if (process.env.NETLIFY || process.env.VERCEL) {
       return { error: { _form: ["Assignment creation is disabled in this hosted environment. A database is required to persist data."] } };
   }
@@ -116,22 +110,20 @@ export async function createAssignment(prevState: any, formData: FormData) {
   const { title, description, stars } = validatedFields.data;
 
   try {
-    // Generate the full quest content from the description
     const { designedQuest } = await designQuest({ description });
 
     const data = await getAssignments();
     const newAssignment: Assignment = {
       id: Date.now().toString(),
       title,
-      description: designedQuest, // Store the full, AI-generated quest
+      description: designedQuest,
       createdAt: new Date().toISOString(),
       status: 'new' as const,
       stars,
     };
     data.push(newAssignment);
     await saveAssignments({ assignments: data });
-    revalidatePath('/parent');
-    revalidatePath('/play');
+    
     return { success: true };
   } catch (error) {
     console.error('Failed to create assignment:', error);
@@ -154,7 +146,6 @@ export async function getGamifiedStory(input: { assignment: string }) {
   try {
     const story = await generateStory({ assignment: validatedFields.data.assignment });
     let audio: TextToSpeechOutput = { audio: '' };
-    // Only generate audio in production to avoid hitting rate limits in dev
     if (process.env.NODE_ENV === 'production' || process.env.NETLIFY || process.env.VERCEL) {
         if (story.story) {
             try {
@@ -176,18 +167,16 @@ export async function updateAssignmentStatus(id: string, status: 'new' | 'inprog
         const assignments = await getAssignments();
         const assignmentIndex = assignments.findIndex(a => a.id === id);
         if (assignmentIndex !== -1) {
-            if (assignments[assignmentIndex].status === 'completed') return; // Don't change a completed quest
+            if (assignments[assignmentIndex].status === 'completed') return;
             assignments[assignmentIndex].status = status;
             await saveAssignments({ assignments });
         }
     } catch(error) {
         console.error("Failed to update assignment status", error);
-        // We don't need to throw here, as it's not critical for the user flow
     }
 }
 
 export async function deleteAssignment(id: string) {
-    // Prevent deletion in a read-only serverless environment
     if (process.env.NETLIFY || process.env.VERCEL) {
       return { error: 'Assignment deletion is disabled in this hosted environment. A database is required to persist data.' };
     }
@@ -195,8 +184,7 @@ export async function deleteAssignment(id: string) {
         const assignments = await getAssignments();
         const updatedAssignments = assignments.filter((a) => a.id !== id);
         await saveAssignments({ assignments: updatedAssignments });
-        revalidatePath('/parent');
-        revalidatePath('/play');
+        
         return { success: true };
     } catch (error) {
         console.error('Failed to delete assignment:', error);

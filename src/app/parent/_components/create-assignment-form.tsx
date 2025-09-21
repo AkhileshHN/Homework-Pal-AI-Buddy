@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { LoaderCircle } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 const initialState: {
   error?: { _form?: string[], title?: string[], description?: string[], stars?: string[] };
@@ -24,6 +25,7 @@ export function CreateAssignmentForm() {
   const [state, formAction, isPending] = useActionState(createAssignment, initialState);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
+  const router = useRouter();
 
   useEffect(() => {
     if (state?.success) {
@@ -32,6 +34,7 @@ export function CreateAssignmentForm() {
         description: 'Your new assignment has been created.',
       });
       formRef.current?.reset();
+      router.refresh(); // Re-fetch server components to update the list
     } else if (state?.error?._form) {
       toast({
         title: 'Oh no!',
@@ -39,7 +42,7 @@ export function CreateAssignmentForm() {
         variant: 'destructive',
       });
     }
-  }, [state, toast]);
+  }, [state, toast, router]);
 
   return (
     <Card>

@@ -1,4 +1,12 @@
-
 {
-  "assignments": []
+  "assignments": [
+    {
+      "id": "1758478375343",
+      "title": "Math Detective: Addition",
+      "description": "##LEARNING##\nAddition means putting numbers together to find a total. When you add, the number gets bigger. For example, if you have 3 apples and you get 2 more, you add 3 + 2 to get 5 apples in total! We can use our fingers or count to help us add small numbers.\n\n##QUIZ##\n1. What is 2 + 3?\nA) 4\nB) 5*\nC) 6\nD) 3\n2. If you have 4 toys and get 1 more, how many do you have?\nA) 3\nB) 4\nC) 5*\nD) 6\n3. What is 5 + 5?\nA) 8\nB) 9\nC) 10*\nD) 11\n4. Add 6 and 2.\nA) 7\nB) 8*\nC) 9\nD) 4\n5. What is 7 + 0?\nA) 0\nB) 1\nC) 7*\nD) 8\n6. If you see 3 birds and 4 more birds fly over, how many birds are there in total?\nA) 6\nB) 7*\nC) 8\nD) 5\n7. What is 1 + 9?\nA) 8\nB) 9\nC) 10*\nD) 11",
+      "createdAt": "2025-09-21T18:12:55.343Z",
+      "status": "new",
+      "stars": 1
+    }
+  ]
 }

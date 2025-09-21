@@ -16,11 +16,13 @@ import {
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Trash2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useTransition } from 'react';
 
 export function DeleteAssignmentButton({ id }: { id: string }) {
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
+  const router = useRouter();
 
   const handleDelete = () => {
     startTransition(async () => {
@@ -28,8 +30,9 @@ export function DeleteAssignmentButton({ id }: { id: string }) {
       if (result.success) {
         toast({
           title: 'Success',
-          description: 'Assignment deleted successfully (simulation).',
+          description: 'Assignment deleted successfully.',
         });
+        router.refresh(); // Re-fetch server components to update the list
       } else if (result.error) {
         toast({
           title: 'Error',
@@ -52,7 +55,7 @@ export function DeleteAssignmentButton({ id }: { id: string }) {
         <AlertDialogHeader>
           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete the assignment. In a hosted environment, this change will not persist.
+            This action cannot be undone. This will permanently delete the assignment.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
