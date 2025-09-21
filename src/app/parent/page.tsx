@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { DeleteAssignmentButton } from './_components/delete-assignment-button';
 import { getAssignments, type Assignment } from '@/lib/data';
 
+export const dynamic = 'force-dynamic';
+
 const StatusIcon = ({ status }: { status: Assignment['status'] }) => {
     switch (status) {
         case 'inprogress':

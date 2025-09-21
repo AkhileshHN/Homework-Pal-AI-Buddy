@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BookCheck, Gamepad2 } from 'lucide-react';
 import { getAssignments, type Assignment } from '@/lib/data';
 
+export const dynamic = 'force-dynamic';
+
 export default async function PlayPage() {
   const assignments = (await getAssignments()).filter(a => a.status !== 'completed');
 
