@@ -87,7 +87,7 @@ export default async function ParentPage() {
                     ) : (
                         <div className="text-center py-12 text-muted-foreground">
                             <List className="mx-auto h-12 w-12" />
-                            <p className="mt-4">No assignments yet. Create one to get started!</p>
+                            <p className="mt-4">Assignment created is not showing</p>
                         </div>
                     )}
                 </CardContent>
