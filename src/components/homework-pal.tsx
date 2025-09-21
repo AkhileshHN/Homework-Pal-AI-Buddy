@@ -186,14 +186,12 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
       role: "user",
       content: option,
     };
-    const newConversation = [...conversation, newUserMessage];
-    setConversation(newConversation);
-
-    const historyForAction = newConversation.map((m) => ({
+    
+    const historyForAction = [...conversation, newUserMessage].map((m) => ({
       role: m.role,
       content: m.content,
     }));
-
+    
     const formData = new FormData();
     formData.append("problem", option);
     formData.append("history", JSON.stringify(historyForAction));
@@ -203,10 +201,14 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
       formData.append("assignment", assignmentDescription);
     }
 
+    // Set conversation here to instantly update UI
+    setConversation(prev => [...prev, newUserMessage]);
+    
+    // Dispatch the server action
     startTransition(() => {
-        formAction(formData);
+      formAction(formData);
     });
-  };
+  }
 
   const handleMicClick = () => {
     if (!speechRecognition) {
@@ -337,58 +339,58 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
             <ExitButton />
         </div>
       </CardHeader>
-      <CardContent className="flex-1 p-0">
-        <ScrollArea className="h-full">
-          <div className="p-6 space-y-6">
-            {conversation.map((msg) => {
-              const messageType = getMessageType(msg);
-              return (
+      <CardContent className="flex-1 p-0 overflow-y-auto">
+        <div className="p-6 space-y-6">
+          {conversation.map((msg) => {
+            const messageType = getMessageType(msg);
+            return (
+            <div
+              key={msg.id}
+              className={cn(
+                "flex items-start gap-3 animate-in fade-in slide-in-from-bottom-4 duration-500",
+                messageType === "user" ? "justify-end" : "justify-start"
+              )}
+            >
+              {messageType !== "user" && (
+                 <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0">
+                  <Bot className="w-5 h-5 text-primary-foreground" />
+                 </div>
+              )}
               <div
-                key={msg.id}
                 className={cn(
-                  "flex items-start gap-3 animate-in fade-in slide-in-from-bottom-4 duration-500",
-                  messageType === "user" ? "justify-end" : "justify-start"
+                  "max-w-[80%] rounded-2xl px-4 py-3 text-sm md:text-base",
+                  messageType === "user"
+                    ? "bg-primary text-primary-foreground rounded-br-none"
+                    : "bg-muted text-muted-foreground rounded-bl-none",
+                  messageType === "ai-reward" && "bg-accent/80 text-accent-foreground"
                 )}
               >
-                {messageType !== "user" && (
-                   <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0">
-                    <Bot className="w-5 h-5 text-primary-foreground" />
-                   </div>
-                )}
-                <div
-                  className={cn(
-                    "max-w-[80%] rounded-2xl px-4 py-3 text-sm md:text-base",
-                    messageType === "user"
-                      ? "bg-primary text-primary-foreground rounded-br-none"
-                      : "bg-muted text-muted-foreground rounded-bl-none",
-                    messageType === "ai-reward" && "bg-accent/80 text-accent-foreground"
-                  )}
-                >
-                  {messageType === 'ai-reward' && <Trophy className="inline-block mr-2 w-4 h-4" />}
-                  <p className="whitespace-pre-wrap">{msg.content}</p>
-                  {msg.quizQuestion && <p className="font-bold whitespace-pre-wrap mt-2">{msg.quizQuestion}</p>}
-                </div>
-                 {messageType === "user" && (
-                   <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center shrink-0">
-                    <User className="w-5 h-5 text-secondary-foreground" />
-                   </div>
-                )}
-              </div>
-            )})}
-            {isPending && !selectedOption && (
-              <div className="flex items-start gap-3">
-                 <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0">
-                    <Bot className="w-5 h-5 text-primary-foreground" />
-                   </div>
-                <div className="bg-muted rounded-2xl rounded-bl-none px-4 py-3 flex items-center gap-2">
-                    <LoaderCircle className="w-4 h-4 animate-spin text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Thinking...</span>
+                {messageType === 'ai-reward' && <Trophy className="inline-block mr-2 w-4 h-4" />}
+                <div className="whitespace-pre-wrap">
+                  <p>{msg.content}</p>
+                  {msg.quizQuestion && <p className="font-bold mt-2">{msg.quizQuestion}</p>}
                 </div>
               </div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
-        </ScrollArea>
+               {messageType === "user" && (
+                 <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center shrink-0">
+                  <User className="w-5 h-5 text-secondary-foreground" />
+                 </div>
+              )}
+            </div>
+          )})}
+          {isPending && !selectedOption && (
+            <div className="flex items-start gap-3">
+               <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0">
+                  <Bot className="w-5 h-5 text-primary-foreground" />
+                 </div>
+              <div className="bg-muted rounded-2xl rounded-bl-none px-4 py-3 flex items-center gap-2">
+                  <LoaderCircle className="w-4 h-4 animate-spin text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">Thinking...</span>
+              </div>
+            </div>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
       </CardContent>
       <CardFooter className="p-4 border-t bg-card/80 backdrop-blur-sm">
         {isComplete ? (
@@ -428,7 +430,7 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
                     <Button
                         key={index}
                         type="button"
-                        variant={isPending && isSelected ? "default" : (isSkipButton ? "secondary" : "outline")}
+                        variant={isSelected ? "default" : (isSkipButton ? "secondary" : "outline")}
                         className={cn("h-auto py-3 text-base justify-start text-left", isSkipButton && "md:col-span-2")}
                         onClick={() => handleQuizOptionClick(option)}
                         disabled={isPending}
