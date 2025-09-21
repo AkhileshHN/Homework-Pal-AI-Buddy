@@ -21,7 +21,7 @@ const sortAssignments = (assignments: Assignment[]) => {
 export async function getAssignments(): Promise<Assignment[]> {
   // Deployed environment (Netlify, Vercel, etc.)
   // First, check if the environment variable exists and is a non-empty string.
-  if (process.env.ASSIGNMENTS_JSON && process.env.ASSIGNMENTS_JSON.trim() !== '') {
+  if (process.env.ASSIGNMENTS_JSON && process.env.ASSIGNMENTS_JSON.trim()) {
     try {
       // The environment variable is expected to be a stringified JSON object: `{"assignments": [...]}`
       const data = JSON.parse(process.env.ASSIGNMENTS_JSON);
@@ -38,9 +38,11 @@ export async function getAssignments(): Promise<Assignment[]> {
     const data = JSON.parse(fileContent);
     return sortAssignments(data.assignments || []);
   } catch (error) {
+    // If the file doesn't exist, return an empty array.
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-      return []; // File doesn't exist, which is fine for a fresh start.
+      return []; 
     }
+    // For any other reading error, log it and return an empty array.
     console.error("Error reading local assignments file:", error);
     return [];
   }
