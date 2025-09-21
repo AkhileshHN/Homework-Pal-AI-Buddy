@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BookCheck, Gamepad2 } from 'lucide-react';
 import { getAssignments, type Assignment } from '@/lib/data';
+import { QuestLinkButton } from '@/components/ui/quest-link-button';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,12 +34,10 @@ export default async function PlayPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <Button asChild className="w-full">
-                  <Link href={`/play/${assignment.id}`}>
-                    <BookCheck className="mr-2 h-4 w-4" />
-                    {assignment.status === 'inprogress' ? 'Continue Quest' : 'Start Quest'}
-                  </Link>
-                </Button>
+                <QuestLinkButton href={`/play/${assignment.id}`} className="w-full">
+                  <BookCheck className="mr-2 h-4 w-4" />
+                  {assignment.status === 'inprogress' ? 'Continue Quest' : 'Start Quest'}
+                </QuestLinkButton>
               </CardContent>
             </Card>
           ))}

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { DeleteAssignmentButton } from './_components/delete-assignment-button';
 import { getAssignments, type Assignment } from '@/lib/data';
+import { QuestLinkButton } from '@/components/ui/quest-link-button';
 
 export const dynamic = 'force-dynamic';
 
@@ -75,12 +76,17 @@ export default async function ParentPage() {
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <Button asChild variant={assignment.status === 'completed' ? 'outline' : 'secondary'} size="sm" disabled={assignment.status === 'completed'}>
-                                        <Link href={`/play/${assignment.id}`}>
+                                    {assignment.status === 'completed' ? (
+                                        <Button variant="outline" size="sm" disabled>
                                             <StatusIcon status={assignment.status} />
-                                            {assignment.status === 'completed' ? 'Completed' : (assignment.status === 'inprogress' ? 'In Progress' : 'Start Quest')}
-                                        </Link>
-                                    </Button>
+                                            Completed
+                                        </Button>
+                                    ) : (
+                                        <QuestLinkButton href={`/play/${assignment.id}`} variant="secondary" size="sm">
+                                            <StatusIcon status={assignment.status} />
+                                            {assignment.status === 'inprogress' ? 'In Progress' : 'Start Quest'}
+                                        </QuestLinkButton>
+                                    )}
                                     <DeleteAssignmentButton id={assignment.id} />
                                 </div>
                             </li>
