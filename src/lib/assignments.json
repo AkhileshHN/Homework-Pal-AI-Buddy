@@ -1,10 +1,10 @@
 {
   "assignments": [
     {
-      "id": "1758478712587",
+      "id": "1758478779907",
       "title": "Math Detective: Addition",
-      "description": "##LEARNING##\nAdding numbers means putting them together to find out how many you have in total. For example, if you have 3 apples and you get 2 more apples, you add them: 3 + 2 = 5 apples. When we add numbers up to 10, we are looking for sums that are 10 or less. It's like counting forward!\n\n##QUIZ##\n1. What is 2 + 3?\n  A) 4\n  B) 5*\n  C) 6\n  D) 7\n2. If you have 4 balloons and get 1 more, how many do you have?\n  A) 3\n  B) 4\n  C) 5*\n  D) 6\n3. What is 6 + 2?\n  A) 7\n  B) 8*\n  C) 9\n  D) 10\n4. Which one makes 7?\n  A) 4 + 4\n  B) 5 + 3\n  C) 3 + 4*\n  D) 2 + 6\n5. What is 5 + 5?\n  A) 8\n  B) 9\n  C) 10*\n  D) 11\n6. If you have 7 toys and find 3 more, how many toys do you have in total?\n  A) 9\n  B) 10*\n  C) 11\n  D) 12",
-      "createdAt": "2025-09-21T18:18:32.587Z",
+      "description": "##LEARNING##\nAdding numbers means putting them together to find out how many you have in total. For example, if you have 3 apples and someone gives you 2 more apples, you add them: 3 + 2 = 5 apples. When we add numbers up to 10, we're just counting how many we have when two small groups join!\n\n##QUIZ##\n1. What is 2 + 3?\n  A) 4\n  B) 5*\n  C) 6\n  D) 7\n2. If you have 4 toys and get 1 more, how many do you have?\n  A) 3\n  B) 4\n  C) 5*\n  D) 6\n3. What is 5 + 5?\n  A) 8\n  B) 9\n  C) 10*\n  D) 11\n4. Count them: 6 cookies and 2 more cookies. How many total?\n  A) 7\n  B) 8*\n  C) 9\n  D) 10\n5. What is 1 + 7?\n  A) 6\n  B) 7\n  C) 8*\n  D) 9\n6. Which one makes 9?\n  A) 3 + 4\n  B) 5 + 2\n  C) 6 + 3*\n  D) 4 + 3\n7. What is 0 + 8?\n  A) 0\n  B) 1\n  C) 8*\n  D) 9",
+      "createdAt": "2025-09-21T18:19:39.907Z",
       "status": "new",
       "stars": 1
     }
