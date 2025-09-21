@@ -117,15 +117,13 @@ export async function createAssignment(prevState: any, formData: FormData) {
 
   try {
     // Generate the full quest content from the description
-    const questResult = await designQuest({ description });
-    const fullQuest = questResult.designedQuest;
-
+    const { designedQuest } = await designQuest({ description });
 
     const data = await getAssignments();
     const newAssignment: Assignment = {
       id: Date.now().toString(),
       title,
-      description: fullQuest, // Store the full, AI-generated quest
+      description: designedQuest, // Store the full, AI-generated quest
       createdAt: new Date().toISOString(),
       status: 'new' as const,
       stars,
@@ -137,7 +135,8 @@ export async function createAssignment(prevState: any, formData: FormData) {
     return { success: true };
   } catch (error) {
     console.error('Failed to create assignment:', error);
-    return { error: { _form: ['Failed to create assignment. Please try again.'] } };
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
+    return { error: { _form: [`Failed to create assignment: ${errorMessage}`] } };
   }
 }
 
