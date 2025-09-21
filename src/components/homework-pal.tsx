@@ -30,7 +30,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "./ui/alert-dialog";
+} from "@/components/ui/alert-dialog";
 import { useRouter } from "next/navigation";
 import type { HomeworkBuddyOutput } from "@/ai/flows/reasoning-based-guidance";
 
@@ -176,7 +176,6 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
   }
 
   const handleQuizOptionClick = (option: string) => {
-    // Set the selected option for immediate visual feedback
     setSelectedOption(option);
 
     const newUserMessage: Message = {
@@ -185,10 +184,8 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
       content: option,
     };
     
-    // Update the UI immediately with the user's choice
     setConversation((prev) => [...prev, newUserMessage]);
     
-    // Construct the history for the action using the *new* conversation
     const historyForAction = [...conversation, newUserMessage].map(m => ({ role: m.role, content: m.content }));
     
     const formData = new FormData();
@@ -200,7 +197,6 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
       formData.append('assignment', assignmentDescription);
     }
     
-    // Dispatch the server action
     formAction(formData);
   }
 
@@ -418,20 +414,21 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
              <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-3">
                 {lastMessage.quizOptions?.map((option, index) => {
                   const isSkipButton = option.toLowerCase().includes('skip');
-                  const isSelected = isPending && selectedOption === option;
+                  const isSelected = selectedOption === option;
+                  
                   return (
                     <Button
                         key={index}
                         type="button"
-                        variant={isSkipButton ? "secondary" : "outline"}
+                        variant={isSelected ? "default" : (isSkipButton ? "secondary" : "outline")}
                         className={cn("h-auto py-3 text-base justify-start text-left", isSkipButton && "md:col-span-2")}
                         onClick={() => handleQuizOptionClick(option)}
                         disabled={isPending}
                     >
-                      {isSelected ? (
+                      {isPending && isSelected ? (
                         <LoaderCircle className="w-5 h-5 animate-spin mr-2" />
                       ) : (
-                        !isSkipButton && <span className="text-primary mr-2 font-bold">{String.fromCharCode(65 + index)}:</span>
+                        !isSkipButton && <span className={cn("mr-2 font-bold", isSelected ? "text-primary-foreground" : "text-primary")}>{String.fromCharCode(65 + index)}:</span>
                       )}
                         {option}
                     </Button>
@@ -480,3 +477,5 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
     </Card>
   );
 }
+
+    
