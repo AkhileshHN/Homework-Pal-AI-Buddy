@@ -1,3 +1,4 @@
+
 'use client';
 
 import { deleteAssignment } from '@/app/actions';
@@ -27,9 +28,9 @@ export function DeleteAssignmentButton({ id }: { id: string }) {
       if (result.success) {
         toast({
           title: 'Success',
-          description: 'Assignment deleted successfully.',
+          description: 'Assignment deleted successfully (simulation).',
         });
-      } else {
+      } else if (result.error) {
         toast({
           title: 'Error',
           description: result.error,
@@ -51,7 +52,7 @@ export function DeleteAssignmentButton({ id }: { id: string }) {
         <AlertDialogHeader>
           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete the assignment.
+            This action cannot be undone. This will permanently delete the assignment. In a hosted environment, this change will not persist.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

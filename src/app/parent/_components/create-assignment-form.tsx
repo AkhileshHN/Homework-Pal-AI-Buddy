@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useActionState, useEffect, useRef } from 'react';
@@ -10,10 +11,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { LoaderCircle } from 'lucide-react';
 
-const initialState = {
+const initialState: {
+  error?: { _form?: string[], title?: string[], description?: string[], stars?: string[] };
+  success?: boolean;
+} = {
   error: undefined,
   success: false,
 };
+
 
 export function CreateAssignmentForm() {
   const [state, formAction, isPending] = useActionState(createAssignment, initialState);

@@ -23,8 +23,6 @@ const inputSchema = z.object({
   assignmentId: z.string(),
 });
 
-const assignmentsFilePath = path.join(process.cwd(), 'src', 'lib', 'assignments.json');
-
 type Assignment = {
   id: string;
   title: string;
@@ -34,24 +32,31 @@ type Assignment = {
   stars: number;
 };
 
+// In a serverless environment like Netlify, the filesystem is read-only.
+// We'll read assignments from an environment variable.
+// For a production app, you would replace this with a database.
 async function getAssignments(): Promise<{assignments: Assignment[]}> {
   try {
-    const data = await fs.readFile(assignmentsFilePath, 'utf-8');
+    const data = process.env.ASSIGNMENTS_JSON;
     if (!data) {
         return { assignments: [] };
     }
     const jsonData = JSON.parse(data);
     return { assignments: jsonData.assignments || [] };
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT' || error instanceof SyntaxError) {
-      return { assignments: [] }; // File not found or invalid JSON, return empty
-    }
-    throw error;
+    console.error("Error parsing assignments from environment variable:", error);
+    return { assignments: [] };
   }
 }
 
-async function saveAssignments(assignments: any) {
-  await fs.writeFile(assignmentsFilePath, JSON.stringify(assignments, null, 2), 'utf-8');
+// In a real application, this would write to a database.
+// Since we're using environment variables, we can't persist changes at runtime.
+// We will log to the console to simulate the action.
+async function saveAssignments(assignments: { assignments: Assignment[] }) {
+    console.log("Simulating assignment save. In a real app, this would write to a database.");
+    console.log("Updated assignments would be:", JSON.stringify(assignments, null, 2));
+    // On Netlify/Vercel, we can't update env vars at runtime, so this is a mock.
+    // To persist changes, a database is required.
 }
 
 
@@ -140,6 +145,11 @@ export async function createAssignment(prevState: any, formData: FormData) {
       error: validatedFields.error.flatten().fieldErrors,
     };
   }
+  
+  if (process.env.VERCEL_ENV === 'production' || process.env.NETLIFY) {
+      return { error: { _form: ["Assignment creation is disabled in this hosted environment. A database is required to persist data."] } };
+  }
+
 
   const { title, description, stars } = validatedFields.data;
 
@@ -216,6 +226,9 @@ export async function updateAssignmentStatus(id: string, status: 'new' | 'inprog
 }
 
 export async function deleteAssignment(id: string) {
+    if (process.env.VERCEL_ENV === 'production' || process.env.NETLIFY) {
+      return { error: 'Assignment deletion is disabled in this hosted environment. A database is required to persist data.' };
+    }
     try {
         const { assignments } = await getAssignments();
         const updatedAssignments = assignments.filter((a) => a.id !== id);

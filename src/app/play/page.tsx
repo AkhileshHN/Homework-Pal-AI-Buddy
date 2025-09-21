@@ -1,3 +1,4 @@
+
 import { promises as fs } from 'fs';
 import path from 'path';
 import Link from 'next/link';
@@ -14,17 +15,14 @@ type Assignment = {
 };
 
 async function getAssignments(): Promise<Assignment[]> {
-  const filePath = path.join(process.cwd(), 'src', 'lib', 'assignments.json');
    try {
-    const data = await fs.readFile(filePath, 'utf-8');
+    const data = process.env.ASSIGNMENTS_JSON;
     if (!data) return [];
     const jsonData = JSON.parse(data);
     return (jsonData.assignments || []).filter((a: Assignment) => a.status !== 'completed');
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT' || error instanceof SyntaxError) {
-      return []; // File not found or invalid JSON, return empty array
-    }
-    throw error;
+    console.error("Error parsing assignments from env var:", error);
+    return [];
   }
 }
 

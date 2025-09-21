@@ -1,3 +1,4 @@
+
 import { promises as fs } from 'fs';
 import path from 'path';
 import { CreateAssignmentForm } from './_components/create-assignment-form';
@@ -17,9 +18,8 @@ type Assignment = {
 };
 
 async function getAssignments(): Promise<Assignment[]> {
-  const filePath = path.join(process.cwd(), 'src', 'lib', 'assignments.json');
   try {
-    const data = await fs.readFile(filePath, 'utf-8');
+    const data = process.env.ASSIGNMENTS_JSON;
     if (!data) {
         return [];
     }
@@ -30,10 +30,8 @@ async function getAssignments(): Promise<Assignment[]> {
     });
     return assignments;
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT' || error instanceof SyntaxError) {
-      return []; // File not found or invalid JSON, return empty array
-    }
-    throw error;
+    console.error("Error parsing assignments from env var:", error);
+    return [];
   }
 }
 
@@ -91,7 +89,7 @@ export default async function ParentPage() {
                                          {assignment.status === 'inprogress' && <div className="w-2 h-2 rounded-full bg-yellow-500 mr-2"></div>}
                                         <h3 className="font-semibold">{assignment.title}</h3>
                                     </div>
-                                    <p className="text-sm text-muted-foreground">{assignment.description}</p>
+                                    <p className="text-sm text-muted-foreground line-clamp-2">{assignment.description.split('##LEARNING##')[1]?.split('##QUIZ##')[0]?.trim() || 'No description available.'}</p>
                                     <div className="flex items-center text-xs text-muted-foreground/50 mt-1">
                                         <span>
                                             Created on: {new Date(assignment.createdAt).toLocaleDateString()}
