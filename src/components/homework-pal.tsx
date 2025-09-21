@@ -61,6 +61,7 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
   const [isComplete, setIsComplete] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [speechRecognition, setSpeechRecognition] = useState<any>(null);
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
   
   const router = useRouter();
   const messageIdCounter = useRef(0);
@@ -94,6 +95,8 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
 
   useEffect(() => {
     if (!state) return;
+
+    setSelectedOption(null); // Clear selected option when response is received
 
     if ("error" in state && state.error) {
       toast({
@@ -173,6 +176,9 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
   }
 
   const handleQuizOptionClick = (option: string) => {
+    // Set the selected option for immediate visual feedback
+    setSelectedOption(option);
+
     const newUserMessage: Message = {
       id: messageIdCounter.current++,
       role: 'user',
@@ -365,7 +371,7 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
                 )}
               </div>
             )})}
-            {isPending && (
+            {isPending && !selectedOption && (
               <div className="flex items-start gap-3">
                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0">
                     <Bot className="w-5 h-5 text-primary-foreground" />
@@ -412,6 +418,7 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
              <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-3">
                 {lastMessage.quizOptions?.map((option, index) => {
                   const isSkipButton = option.toLowerCase().includes('skip');
+                  const isSelected = isPending && selectedOption === option;
                   return (
                     <Button
                         key={index}
@@ -421,7 +428,11 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
                         onClick={() => handleQuizOptionClick(option)}
                         disabled={isPending}
                     >
-                        {!isSkipButton && <span className="text-primary mr-2 font-bold">{String.fromCharCode(65 + index)}:</span>}
+                      {isSelected ? (
+                        <LoaderCircle className="w-5 h-5 animate-spin mr-2" />
+                      ) : (
+                        !isSkipButton && <span className="text-primary mr-2 font-bold">{String.fromCharCode(65 + index)}:</span>
+                      )}
                         {option}
                     </Button>
                   )
