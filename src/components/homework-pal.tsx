@@ -173,10 +173,10 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
   }
 
   const handleQuizOptionClick = (option: string) => {
-      const newUserMessage: Message = {
-        id: messageIdCounter.current++,
-        role: 'user',
-        content: option,
+    const newUserMessage: Message = {
+      id: messageIdCounter.current++,
+      role: 'user',
+      content: option,
     };
     const newConversation = [...conversation, newUserMessage];
     setConversation(newConversation);
