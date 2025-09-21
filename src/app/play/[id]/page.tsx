@@ -1,46 +1,8 @@
 
-import { promises as fs } from 'fs';
-import path from 'path';
 import { notFound } from 'next/navigation';
 import { HomeworkPal } from '@/components/homework-pal';
 import { getGamifiedStory, updateAssignmentStatus } from '@/app/actions';
-
-type Assignment = {
-  id: string;
-  title: string;
-  description: string;
-  createdAt: string;
-  status: 'new' | 'inprogress' | 'completed';
-  stars: number;
-};
-
-const ASSIGNMENTS_FILE_PATH = path.join(process.cwd(), 'src/lib/assignments.json');
-
-async function getAssignment(id: string): Promise<Assignment | undefined> {
-  // Deployed environment (Netlify, Vercel, etc.)
-  if (process.env.ASSIGNMENTS_JSON) {
-    try {
-      const data = JSON.parse(process.env.ASSIGNMENTS_JSON);
-      return (data.assignments || []).find((a: Assignment) => a.id === id);
-    } catch (error) {
-      console.error("Error parsing assignments from environment variable:", error);
-      return undefined;
-    }
-  }
-
-  // Local development environment
-  try {
-    const fileContent = await fs.readFile(ASSIGNMENTS_FILE_PATH, 'utf-8');
-    const data = JSON.parse(fileContent);
-    return (data.assignments || []).find((a: Assignment) => a.id === id);
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-      return undefined;
-    }
-    console.error("Error reading local assignments file:", error);
-    return undefined;
-  }
-}
+import { getAssignment } from '@/lib/data';
 
 export default async function PlayAssignmentPage({ params }: { params: { id: string } }) {
   const assignment = await getAssignment(params.id);

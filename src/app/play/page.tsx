@@ -1,49 +1,12 @@
 
-import { promises as fs } from 'fs';
-import path from 'path';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BookCheck, Gamepad2 } from 'lucide-react';
-
-type Assignment = {
-  id: string;
-  title: string;
-  description: string;
-  createdAt: string;
-  status: 'new' | 'inprogress' | 'completed';
-};
-
-const ASSIGNMENTS_FILE_PATH = path.join(process.cwd(), 'src/lib/assignments.json');
-
-async function getAssignments(): Promise<Assignment[]> {
-  // Deployed environment (Netlify, Vercel, etc.)
-  if (process.env.ASSIGNMENTS_JSON) {
-    try {
-      const data = JSON.parse(process.env.ASSIGNMENTS_JSON);
-      return (data.assignments || []).filter((a: Assignment) => a.status !== 'completed');
-    } catch (error) {
-      console.error("Error parsing assignments from environment variable:", error);
-      return [];
-    }
-  }
-
-  // Local development environment
-  try {
-    const fileContent = await fs.readFile(ASSIGNMENTS_FILE_PATH, 'utf-8');
-    const data = JSON.parse(fileContent);
-    return (data.assignments || []).filter((a: Assignment) => a.status !== 'completed');
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-      return [];
-    }
-    console.error("Error reading local assignments file:", error);
-    return [];
-  }
-}
+import { getAssignments, type Assignment } from '@/lib/data';
 
 export default async function PlayPage() {
-  const assignments = await getAssignments();
+  const assignments = (await getAssignments()).filter(a => a.status !== 'completed');
 
   return (
     <div className="container mx-auto p-4 md:p-8">

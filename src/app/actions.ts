@@ -8,11 +8,10 @@ import {
 } from "@/ai/flows/reasoning-based-guidance";
 import { textToSpeech, TextToSpeechOutput } from "@/ai/flows/text-to-speech";
 import { z } from "zod";
-import { promises as fs } from 'fs';
-import path from 'path';
-import { generateStory, type StoryGeneratorInput } from "@/ai/flows/story-generator";
+import { generateStory } from "@/ai/flows/story-generator";
 import { revalidatePath } from "next/cache";
 import { designQuest } from "@/ai/flows/design-quest";
+import { getAssignments, saveAssignments, type Assignment } from "@/lib/data";
 
 const inputSchema = z.object({
   assignment: z.string(),
@@ -22,60 +21,6 @@ const inputSchema = z.object({
   })),
   assignmentId: z.string(),
 });
-
-type Assignment = {
-  id: string;
-  title: string;
-  description: string;
-  createdAt: string;
-  status: 'new' | 'inprogress' | 'completed';
-  stars: number;
-};
-
-const ASSIGNMENTS_FILE_PATH = path.join(process.cwd(), 'src/lib/assignments.json');
-
-async function getAssignments(): Promise<{ assignments: Assignment[] }> {
-  // Deployed environment (Netlify, Vercel, etc.)
-  if (process.env.ASSIGNMENTS_JSON) {
-    try {
-      const data = JSON.parse(process.env.ASSIGNMENTS_JSON);
-      return { assignments: data.assignments || [] };
-    } catch (error) {
-      console.error("Error parsing assignments from environment variable:", error);
-      return { assignments: [] };
-    }
-  }
-
-  // Local development environment
-  try {
-    const fileContent = await fs.readFile(ASSIGNMENTS_FILE_PATH, 'utf-8');
-    const data = JSON.parse(fileContent);
-    return { assignments: data.assignments || [] };
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-      // File doesn't exist, return empty array
-      return { assignments: [] };
-    }
-    console.error("Error reading local assignments file:", error);
-    return { assignments: [] };
-  }
-}
-
-async function saveAssignments(assignments: { assignments: Assignment[] }) {
-  // In a serverless environment, we can't (and shouldn't) write to the filesystem.
-  if (process.env.NETLIFY || process.env.VERCEL) {
-    console.log("Simulating assignment save in serverless environment. Data is not persisted.");
-    return;
-  }
-
-  // For local development, write to the file.
-  try {
-    await fs.writeFile(ASSIGNMENTS_FILE_PATH, JSON.stringify(assignments, null, 2), 'utf-8');
-  } catch (error) {
-    console.error("Error writing local assignments file:", error);
-  }
-}
-
 
 export async function getHomeworkHelp(
   prevState: any,
@@ -110,7 +55,7 @@ export async function getHomeworkHelp(
     
     // If the quest is over, mark it as completed.
     if (output.stage === 'REWARD') {
-        const { assignments } = await getAssignments();
+        const assignments = await getAssignments();
         const assignmentIndex = assignments.findIndex(a => a.id === assignmentId);
         if (assignmentIndex !== -1) {
           assignments[assignmentIndex].status = 'completed';
@@ -177,7 +122,7 @@ export async function createAssignment(prevState: any, formData: FormData) {
 
 
     const data = await getAssignments();
-    const newAssignment = {
+    const newAssignment: Assignment = {
       id: Date.now().toString(),
       title,
       description: fullQuest, // Store the full, AI-generated quest
@@ -185,8 +130,8 @@ export async function createAssignment(prevState: any, formData: FormData) {
       status: 'new' as const,
       stars,
     };
-    data.assignments.push(newAssignment);
-    await saveAssignments(data);
+    data.push(newAssignment);
+    await saveAssignments({ assignments: data });
     revalidatePath('/parent');
     revalidatePath('/play');
     return { success: true };
@@ -229,7 +174,7 @@ export async function getGamifiedStory(input: { assignment: string }) {
 
 export async function updateAssignmentStatus(id: string, status: 'new' | 'inprogress' | 'completed') {
     try {
-        const { assignments } = await getAssignments();
+        const assignments = await getAssignments();
         const assignmentIndex = assignments.findIndex(a => a.id === id);
         if (assignmentIndex !== -1) {
             if (assignments[assignmentIndex].status === 'completed') return; // Don't change a completed quest
@@ -248,7 +193,7 @@ export async function deleteAssignment(id: string) {
       return { error: 'Assignment deletion is disabled in this hosted environment. A database is required to persist data.' };
     }
     try {
-        const { assignments } = await getAssignments();
+        const assignments = await getAssignments();
         const updatedAssignments = assignments.filter((a) => a.id !== id);
         await saveAssignments({ assignments: updatedAssignments });
         revalidatePath('/parent');

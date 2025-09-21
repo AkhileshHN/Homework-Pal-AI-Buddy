@@ -1,56 +1,11 @@
 
-import { promises as fs } from 'fs';
-import path from 'path';
 import { CreateAssignmentForm } from './_components/create-assignment-form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { List, BookCheck, CheckCheck, LoaderCircle, Star } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { DeleteAssignmentButton } from './_components/delete-assignment-button';
-
-type Assignment = {
-  id: string;
-  title: string;
-  description: string;
-  createdAt: string;
-  status: 'new' | 'inprogress' | 'completed';
-  stars: number;
-};
-
-const ASSIGNMENTS_FILE_PATH = path.join(process.cwd(), 'src/lib/assignments.json');
-
-async function getAssignments(): Promise<Assignment[]> {
-  // Deployed environment (Netlify, Vercel, etc.)
-  if (process.env.ASSIGNMENTS_JSON) {
-    try {
-      const data = JSON.parse(process.env.ASSIGNMENTS_JSON);
-      const assignments = (data.assignments || []).sort((a: Assignment, b: Assignment) => {
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      });
-      return assignments;
-    } catch (error) {
-      console.error("Error parsing assignments from environment variable:", error);
-      return [];
-    }
-  }
-
-  // Local development environment
-  try {
-    const fileContent = await fs.readFile(ASSIGNMENTS_FILE_PATH, 'utf-8');
-    const data = JSON.parse(fileContent);
-    const assignments = (data.assignments || []).sort((a: Assignment, b: Assignment) => {
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-    });
-    return assignments;
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-      return []; // File doesn't exist, which is fine.
-    }
-    console.error("Error reading local assignments file:", error);
-    return [];
-  }
-}
-
+import { getAssignments, type Assignment } from '@/lib/data';
 
 const StatusIcon = ({ status }: { status: Assignment['status'] }) => {
     switch (status) {
@@ -62,7 +17,6 @@ const StatusIcon = ({ status }: { status: Assignment['status'] }) => {
             return <BookCheck className="mr-2 h-4 w-4" />;
     }
 }
-
 
 export default async function ParentPage() {
   const assignments = await getAssignments();
