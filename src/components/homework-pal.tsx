@@ -178,9 +178,10 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
       role: 'user',
       content: option,
     };
+    
     const newConversation = [...conversation, newUserMessage];
     setConversation(newConversation);
-
+    
     const historyForAction = newConversation.map(m => ({ role: m.role, content: m.content }));
     const formData = new FormData();
     formData.append('problem', option);
@@ -190,6 +191,7 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
     if (assignmentDescription) {
       formData.append('assignment', assignmentDescription);
     }
+    
     formAction(formData);
   }
 
