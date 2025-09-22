@@ -51,7 +51,7 @@ export default function PlayAssignmentPage() {
 
     fetchStory();
 
-  }, [assignmentId, getAssignment, updateAssignmentStatus, isLoading]);
+  }, [assignmentId, isLoading]);
   
   if (isLoading || !story || !assignment) {
       return (
