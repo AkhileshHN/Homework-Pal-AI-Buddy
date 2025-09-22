@@ -91,10 +91,6 @@ const createAssignmentSchema = z.object({
 });
 
 export async function createAssignment(prevState: any, formData: FormData) {
-  if (process.env.NETLIFY || process.env.VERCEL) {
-      return { error: { _form: ["Assignment creation is disabled in this hosted environment. A database is required to persist data."] } };
-  }
-
   const validatedFields = createAssignmentSchema.safeParse({
     title: formData.get('title'),
     description: formData.get('description'),
@@ -177,9 +173,6 @@ export async function updateAssignmentStatus(id: string, status: 'new' | 'inprog
 }
 
 export async function deleteAssignment(id: string) {
-    if (process.env.NETLIFY || process.env.VERCEL) {
-      return { error: 'Assignment deletion is disabled in this hosted environment. A database is required to persist data.' };
-    }
     try {
         const assignments = await getAssignments();
         const updatedAssignments = assignments.filter((a) => a.id !== id);

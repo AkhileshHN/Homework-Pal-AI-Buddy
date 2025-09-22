@@ -18,19 +18,25 @@ const sortAssignments = (assignments: Assignment[]) => {
   return assignments.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 };
 
+let memoryCache: Assignment[] | null = null;
+
 export async function getAssignments(): Promise<Assignment[]> {
+  // On deployed environments, use an in-memory cache to persist data
+  // for the lifetime of the serverless function instance.
+  if ((process.env.NETLIFY || process.env.VERCEL) && memoryCache) {
+    return sortAssignments(memoryCache);
+  }
+
   const envAssignments = process.env.ASSIGNMENTS_JSON;
 
   // Deployed environment (Netlify, Vercel, etc.)
-  // First, check if the environment variable exists and is a non-empty string.
   if (envAssignments && envAssignments.trim()) {
     try {
-      // The environment variable is expected to be a stringified JSON object: `{"assignments": [...]}`
       const data = JSON.parse(envAssignments);
-      return sortAssignments(data.assignments || []);
+      memoryCache = data.assignments || [];
+      return sortAssignments(memoryCache as Assignment[]);
     } catch (error) {
       console.error("Error parsing assignments from environment variable, falling back to local file:", error);
-      // If parsing fails for any reason, proceed to the fallback below.
     }
   }
 
@@ -38,14 +44,15 @@ export async function getAssignments(): Promise<Assignment[]> {
   try {
     const fileContent = await fs.readFile(ASSIGNMENTS_FILE_PATH, 'utf-8');
     const data = JSON.parse(fileContent);
-    return sortAssignments(data.assignments || []);
+    memoryCache = data.assignments || [];
+    return sortAssignments(memoryCache as Assignment[]);
   } catch (error) {
-    // If the file doesn't exist, return an empty array.
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      memoryCache = [];
       return []; 
     }
-    // For any other reading error, log it and return an empty array.
     console.error("Error reading local assignments file:", error);
+    memoryCache = [];
     return [];
   }
 }
@@ -58,15 +65,16 @@ export async function getAssignment(id: string): Promise<Assignment | undefined>
 
 
 export async function saveAssignments(assignments: { assignments: Assignment[] }) {
-  // In a serverless environment, we can't (and shouldn't) write to the filesystem.
-  // This function will only work for local development.
+  // In a serverless environment, we update the in-memory cache.
   if (process.env.NETLIFY || process.env.VERCEL) {
-    console.log("Simulating assignment save in serverless environment. Data is not persisted.");
+    memoryCache = assignments.assignments;
     return;
   }
 
+  // For local development, write to the filesystem.
   try {
     await fs.writeFile(ASSIGNMENTS_FILE_PATH, JSON.stringify(assignments, null, 2), 'utf-8');
+    memoryCache = assignments.assignments;
   } catch (error) {
     console.error("Error writing local assignments file:", error);
   }
