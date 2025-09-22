@@ -32,11 +32,6 @@ export function useAssignments() {
     }
   }, []);
 
-  const updateStorage = (updatedAssignments: Assignment[]) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedAssignments));
-    setAssignments(updatedAssignments);
-  };
-
   const addAssignment = useCallback(async (newAssignment: Assignment) => {
     setAssignments(prev => {
         const updated = [...prev, newAssignment];
