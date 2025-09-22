@@ -74,6 +74,7 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
   const { toast } = useToast();
   const audioRef = useRef<HTMLAudioElement>(null);
   const recognitionRef = useRef<any>(null);
+  const rewardProcessedRef = useRef(false);
 
   useEffect(() => {
     // Check for SpeechRecognition API on the client after mount
@@ -99,6 +100,10 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
 
   useEffect(() => {
     if (!state) return;
+    
+    if (state.stage === 'REWARD' && rewardProcessedRef.current) {
+        return; // Do not process reward state more than once
+    }
 
     setSelectedOption(null); // Clear selected option when response is received
 
@@ -138,6 +143,7 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
       if (state.stage === 'REWARD') {
         setIsComplete(true);
         onComplete();
+        rewardProcessedRef.current = true;
       }
       
       if ("audio" in state && state.audio && audioRef.current) {
@@ -150,8 +156,10 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
   }, [state, toast, onComplete]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [conversation]);
+    if (!isComplete) {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [conversation, isComplete]);
 
   const handleFormSubmit = (formData: FormData) => {
     const problem = formData.get("problem") as string | null;
@@ -342,64 +350,70 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
         </div>
       </CardHeader>
       <CardContent className="flex-1 p-0 overflow-y-auto">
-        <div className="p-6 space-y-6">
-          {conversation.map((msg) => {
-            const messageType = getMessageType(msg);
-            return (
-            <div
-              key={msg.id}
-              className={cn(
-                "flex items-start gap-3 animate-in fade-in slide-in-from-bottom-4 duration-500",
-                messageType === "user" ? "justify-end" : "justify-start"
-              )}
-            >
-              {messageType !== "user" && (
-                 <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0">
-                  <Bot className="w-5 h-5 text-primary-foreground" />
-                 </div>
-              )}
-              <div
+        <ScrollArea className="h-full">
+            <div className="p-6 space-y-6">
+            {conversation.map((msg) => {
+                const messageType = getMessageType(msg);
+                return (
+                <div
+                key={msg.id}
                 className={cn(
-                  "max-w-[80%] rounded-2xl px-4 py-3 text-sm md:text-base",
-                  messageType === "user"
-                    ? "bg-primary text-primary-foreground rounded-br-none"
-                    : "bg-muted text-muted-foreground rounded-bl-none",
-                  messageType === "ai-reward" && "bg-accent/80 text-accent-foreground"
+                    "flex items-start gap-3 animate-in fade-in slide-in-from-bottom-4 duration-500",
+                    messageType === "user" ? "justify-end" : "justify-start"
                 )}
-              >
-                {messageType === 'ai-reward' && <Trophy className="inline-block mr-2 w-4 h-4" />}
-                <div className="whitespace-pre-wrap">
-                  <p>{msg.content}</p>
-                  {msg.quizQuestion && <p className="font-bold mt-2">{msg.quizQuestion}</p>}
+                >
+                {messageType !== "user" && (
+                    <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0">
+                    <Bot className="w-5 h-5 text-primary-foreground" />
+                    </div>
+                )}
+                <div
+                    className={cn(
+                    "max-w-[80%] rounded-2xl px-4 py-3 text-sm md:text-base",
+                    messageType === "user"
+                        ? "bg-primary text-primary-foreground rounded-br-none"
+                        : "bg-muted text-muted-foreground rounded-bl-none",
+                    messageType === "ai-reward" && "bg-accent/80 text-accent-foreground"
+                    )}
+                >
+                    {messageType === 'ai-reward' && <Trophy className="inline-block mr-2 w-4 h-4" />}
+                    <div className="whitespace-pre-wrap">
+                    <p>{msg.content}</p>
+                    {msg.quizQuestion && <p className="font-bold mt-2">{msg.quizQuestion}</p>}
+                    </div>
                 </div>
-              </div>
-               {messageType === "user" && (
-                 <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center shrink-0">
-                  <User className="w-5 h-5 text-secondary-foreground" />
-                 </div>
-              )}
+                {messageType === "user" && (
+                    <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center shrink-0">
+                    <User className="w-5 h-5 text-secondary-foreground" />
+                    </div>
+                )}
+                </div>
+            )})}
+            {isPending && !selectedOption && (
+                <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0">
+                    <Bot className="w-5 h-5 text-primary-foreground" />
+                    </div>
+                <div className="bg-muted rounded-2xl rounded-bl-none px-4 py-3 flex items-center gap-2">
+                    <LoaderCircle className="w-4 h-4 animate-spin text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">Thinking...</span>
+                </div>
+                </div>
+            )}
+            <div ref={messagesEndRef} />
             </div>
-          )})}
-          {isPending && !selectedOption && (
-            <div className="flex items-start gap-3">
-               <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0">
-                  <Bot className="w-5 h-5 text-primary-foreground" />
-                 </div>
-              <div className="bg-muted rounded-2xl rounded-bl-none px-4 py-3 flex items-center gap-2">
-                  <LoaderCircle className="w-4 h-4 animate-spin text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">Thinking...</span>
-              </div>
-            </div>
-          )}
-          <div ref={messagesEndRef} />
-        </div>
+        </ScrollArea>
       </CardContent>
       <CardFooter className="p-4 border-t bg-card/80 backdrop-blur-sm">
         {isComplete ? (
            <div className="w-full text-center p-4">
             <Trophy className="mx-auto w-12 h-12 text-yellow-500" />
             <h3 className="text-xl font-bold mt-2">Congratulations!</h3>
-            <p className="text-muted-foreground mb-4 whitespace-pre-wrap">{conversation.length > 0 && conversation[conversation.length - 1].content}</p>
+            <div className="text-muted-foreground mb-4 whitespace-pre-wrap">
+                {conversation.length > 0 && 
+                conversation.filter(m => m.id === conversation[conversation.length -1].id).map(m => <p key={m.id}>{m.content}</p>)
+                }
+            </div>
             <div className="flex justify-center gap-4">
                 <Button asChild>
                     <Link href="/play">
@@ -489,3 +503,5 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
     </Card>
   );
 }
+
+    
