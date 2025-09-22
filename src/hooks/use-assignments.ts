@@ -33,29 +33,38 @@ export function useAssignments() {
   }, []);
 
   const updateStorage = (updatedAssignments: Assignment[]) => {
-    setAssignments(updatedAssignments);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedAssignments));
+    setAssignments(updatedAssignments);
   };
 
   const addAssignment = useCallback(async (newAssignment: Assignment) => {
-    const updatedAssignments = [...assignments, newAssignment];
-    updateStorage(updatedAssignments);
-  }, [assignments]);
+    setAssignments(prev => {
+        const updated = [...prev, newAssignment];
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+        return updated;
+    });
+  }, []);
 
   const deleteAssignment = useCallback(async (id: string) => {
-    const updatedAssignments = assignments.filter((a) => a.id !== id);
-    updateStorage(updatedAssignments);
-  }, [assignments]);
+    setAssignments(prev => {
+        const updated = prev.filter((a) => a.id !== id);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+        return updated;
+    });
+  }, []);
 
   const updateAssignmentStatus = useCallback((id: string, status: 'new' | 'inprogress' | 'completed') => {
-    const updatedAssignments = assignments.map(a => {
-        if (a.id === id && a.status !== 'completed') {
-            return { ...a, status };
-        }
-        return a;
+    setAssignments(prev => {
+        const updated = prev.map(a => {
+            if (a.id === id && a.status !== 'completed') {
+                return { ...a, status };
+            }
+            return a;
+        });
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+        return updated;
     });
-    updateStorage(updatedAssignments);
-  }, [assignments]);
+  }, []);
 
   const getAssignment = useCallback((id: string): Assignment | undefined => {
     return assignments.find(a => a.id === id);
