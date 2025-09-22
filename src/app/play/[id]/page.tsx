@@ -1,7 +1,7 @@
 
 'use client';
 
-import { notFound } from 'next/navigation';
+import { notFound, useParams } from 'next/navigation';
 import { HomeworkPal } from '@/components/homework-pal';
 import { getGamifiedStory } from '@/app/actions';
 import { useAssignments } from '@/hooks/use-assignments';
@@ -10,15 +10,17 @@ import { LoaderCircle } from 'lucide-react';
 import type { Assignment } from '@/lib/data';
 
 
-export default function PlayAssignmentPage({ params }: { params: { id: string } }) {
+export default function PlayAssignmentPage() {
+  const params = useParams<{ id: string }>();
   const { getAssignment, updateAssignmentStatus, isLoading } = useAssignments();
   const [story, setStory] = useState<{title: string, story: string, audio: string} | null>(null);
   const [assignment, setAssignment] = useState<Assignment | null>(null);
+  const assignmentId = params.id;
 
   useEffect(() => {
-    if (isLoading) return;
+    if (isLoading || !assignmentId) return;
 
-    const currentAssignment = getAssignment(params.id);
+    const currentAssignment = getAssignment(assignmentId);
 
     if (!currentAssignment) {
       // We can't use notFound() in a client component effect, so we'll handle loading/error states.
@@ -29,7 +31,7 @@ export default function PlayAssignmentPage({ params }: { params: { id: string } 
     setAssignment(currentAssignment);
 
     if (currentAssignment.status !== 'completed') {
-        updateAssignmentStatus(params.id, 'inprogress');
+        updateAssignmentStatus(assignmentId, 'inprogress');
     }
 
     const fetchStory = async () => {
@@ -49,7 +51,7 @@ export default function PlayAssignmentPage({ params }: { params: { id: string } 
 
     fetchStory();
 
-  }, [params.id, getAssignment, updateAssignmentStatus, isLoading]);
+  }, [assignmentId, getAssignment, updateAssignmentStatus, isLoading]);
   
   if (isLoading || !story || !assignment) {
       return (
@@ -73,7 +75,7 @@ export default function PlayAssignmentPage({ params }: { params: { id: string } 
         initialMessage={story.story}
         initialAudio={story.audio}
         starsToAward={assignment.stars}
-        onComplete={() => updateAssignmentStatus(params.id, 'completed')}
+        onComplete={() => updateAssignmentStatus(assignmentId, 'completed')}
       />
     </div>
   );
