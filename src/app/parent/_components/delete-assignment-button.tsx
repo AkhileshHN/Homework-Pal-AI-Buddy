@@ -1,7 +1,6 @@
 
 'use client';
 
-import { deleteAssignment } from '@/app/actions';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,31 +15,35 @@ import {
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Trash2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useTransition } from 'react';
+import { useState } from 'react';
 
-export function DeleteAssignmentButton({ id }: { id: string }) {
-  const [isPending, startTransition] = useTransition();
+type DeleteAssignmentButtonProps = {
+    id: string;
+    onDelete: (id: string) => Promise<void>;
+}
+
+export function DeleteAssignmentButton({ id, onDelete }: DeleteAssignmentButtonProps) {
+  const [isPending, setIsPending] = useState(false);
   const { toast } = useToast();
-  const router = useRouter();
 
-  const handleDelete = () => {
-    startTransition(async () => {
-      const result = await deleteAssignment(id);
-      if (result.success) {
-        toast({
-          title: 'Success',
-          description: 'Assignment deleted successfully.',
-        });
-        router.refresh(); // Re-fetch server components to update the list
-      } else if (result.error) {
-        toast({
-          title: 'Error',
-          description: result.error,
-          variant: 'destructive',
-        });
-      }
-    });
+  const handleDelete = async () => {
+    setIsPending(true);
+    try {
+      await onDelete(id);
+      toast({
+        title: 'Success',
+        description: 'Assignment deleted successfully.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to delete assignment.',
+        variant: 'destructive',
+      });
+       console.error("Failed to delete assignment", error);
+    } finally {
+        setIsPending(false);
+    }
   };
 
   return (

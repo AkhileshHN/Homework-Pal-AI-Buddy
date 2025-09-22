@@ -1,15 +1,39 @@
 
+'use client';
+
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BookCheck, Gamepad2 } from 'lucide-react';
-import { getAssignments, type Assignment } from '@/lib/data';
+import { BookCheck, Gamepad2, LoaderCircle } from 'lucide-react';
+import type { Assignment } from '@/lib/data';
 import { QuestLinkButton } from '@/components/ui/quest-link-button';
+import { useAssignments } from '@/hooks/use-assignments';
 
-export const dynamic = 'force-dynamic';
 
-export default async function PlayPage() {
-  const assignments = (await getAssignments()).filter(a => a.status !== 'completed');
+export default function PlayPage() {
+  const { assignments, isLoading } = useAssignments();
+
+  if (isLoading) {
+      return (
+        <div className="container mx-auto p-4 md:p-8">
+             <header className="flex items-center justify-between mb-8">
+                <div className="text-left">
+                    <h1 className="text-4xl font-bold font-headline">Select Your Quest!</h1>
+                    <p className="text-muted-foreground">An adventure in learning awaits.</p>
+                </div>
+                <Button asChild>
+                    <Link href="/parent">Go to Parent Dashboard</Link>
+                </Button>
+            </header>
+            <div className="text-center py-12">
+                <LoaderCircle className="mx-auto h-12 w-12 animate-spin text-primary" />
+                <p className="mt-4">Loading Quests...</p>
+            </div>
+        </div>
+      )
+  }
+  
+  const availableAssignments = assignments.filter(a => a.status !== 'completed');
 
   return (
     <div className="container mx-auto p-4 md:p-8">
@@ -23,9 +47,9 @@ export default async function PlayPage() {
         </Button>
       </header>
       
-      {assignments.length > 0 ? (
+      {availableAssignments.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {assignments.map(assignment => (
+          {availableAssignments.map(assignment => (
             <Card key={assignment.id} className="hover:shadow-lg transition-shadow">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">

@@ -10,7 +10,6 @@ import { textToSpeech, TextToSpeechOutput } from "@/ai/flows/text-to-speech";
 import { z } from "zod";
 import { generateStory } from "@/ai/flows/story-generator";
 import { designQuest } from "@/ai/flows/design-quest";
-import { getAssignments, saveAssignments, type Assignment } from "@/lib/data";
 
 const inputSchema = z.object({
   assignment: z.string(),
@@ -52,21 +51,15 @@ export async function getHomeworkHelp(
       stars: starsToAward,
     });
     
-    if (output.stage === 'REWARD') {
-        const assignments = await getAssignments();
-        const assignmentIndex = assignments.findIndex(a => a.id === assignmentId);
-        if (assignmentIndex !== -1) {
-          assignments[assignmentIndex].status = 'completed';
-          await saveAssignments({ assignments });
-        }
-    }
-    
     let audio = '';
+    // Generate audio only in production-like environments to save resources during local dev
     if (process.env.NODE_ENV === 'production' || process.env.NETLIFY || process.env.VERCEL) {
         try {
             const audioMessage = output.quizQuestion ? `${output.message} ${output.quizQuestion}` : output.message;
-            const { audio: audioData } = await textToSpeech(audioMessage);
-            audio = audioData;
+            if (audioMessage.trim()) {
+                const { audio: audioData } = await textToSpeech(audioMessage);
+                audio = audioData;
+            }
         } catch (error) {
             console.error("Text to speech failed, returning empty audio.", error);
         }
@@ -84,50 +77,6 @@ export async function getHomeworkHelp(
   }
 }
 
-const createAssignmentSchema = z.object({
-  title: z.string().min(1, 'Title is required.'),
-  description: z.string().min(1, 'Description is required.'),
-  stars: z.coerce.number().min(1, 'Stars must be at least 1.'),
-});
-
-export async function createAssignment(prevState: any, formData: FormData) {
-  const validatedFields = createAssignmentSchema.safeParse({
-    title: formData.get('title'),
-    description: formData.get('description'),
-    stars: formData.get('stars'),
-  });
-
-  if (!validatedFields.success) {
-    return {
-      error: validatedFields.error.flatten().fieldErrors,
-    };
-  }
-
-  const { title, description, stars } = validatedFields.data;
-
-  try {
-    const { designedQuest } = await designQuest({ description });
-
-    const data = await getAssignments();
-    const newAssignment: Assignment = {
-      id: Date.now().toString(),
-      title,
-      description: designedQuest,
-      createdAt: new Date().toISOString(),
-      status: 'new' as const,
-      stars,
-    };
-    data.push(newAssignment);
-    await saveAssignments({ assignments: data });
-    
-    return { success: true };
-  } catch (error) {
-    console.error('Failed to create assignment:', error);
-    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
-    return { error: { _form: [`Failed to create assignment: ${errorMessage}`] } };
-  }
-}
-
 const storyInputSchema = z.object({
   assignment: z.string(),
 });
@@ -142,6 +91,7 @@ export async function getGamifiedStory(input: { assignment: string }) {
   try {
     const story = await generateStory({ assignment: validatedFields.data.assignment });
     let audio: TextToSpeechOutput = { audio: '' };
+    // Generate audio only in production-like environments
     if (process.env.NODE_ENV === 'production' || process.env.NETLIFY || process.env.VERCEL) {
         if (story.story) {
             try {
@@ -156,31 +106,4 @@ export async function getGamifiedStory(input: { assignment: string }) {
     console.error("Error generating story:", error);
     throw new Error("Could not generate a story for the assignment.");
   }
-}
-
-export async function updateAssignmentStatus(id: string, status: 'new' | 'inprogress' | 'completed') {
-    try {
-        const assignments = await getAssignments();
-        const assignmentIndex = assignments.findIndex(a => a.id === id);
-        if (assignmentIndex !== -1) {
-            if (assignments[assignmentIndex].status === 'completed') return;
-            assignments[assignmentIndex].status = status;
-            await saveAssignments({ assignments });
-        }
-    } catch(error) {
-        console.error("Failed to update assignment status", error);
-    }
-}
-
-export async function deleteAssignment(id: string) {
-    try {
-        const assignments = await getAssignments();
-        const updatedAssignments = assignments.filter((a) => a.id !== id);
-        await saveAssignments({ assignments: updatedAssignments });
-        
-        return { success: true };
-    } catch (error) {
-        console.error('Failed to delete assignment:', error);
-        return { error: 'Failed to delete assignment.' };
-    }
 }

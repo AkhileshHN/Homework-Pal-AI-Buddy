@@ -1,14 +1,16 @@
 
+'use client';
+
+import { useState, useEffect } from 'react';
 import { CreateAssignmentForm } from './_components/create-assignment-form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { List, BookCheck, CheckCheck, LoaderCircle, Star } from 'lucide-react';
+import { List, CheckCheck, LoaderCircle, Star } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { DeleteAssignmentButton } from './_components/delete-assignment-button';
-import { getAssignments, type Assignment } from '@/lib/data';
+import type { Assignment } from '@/lib/data';
 import { QuestLinkButton } from '@/components/ui/quest-link-button';
-
-export const dynamic = 'force-dynamic';
+import { useAssignments } from '@/hooks/use-assignments';
 
 const StatusIcon = ({ status }: { status: Assignment['status'] }) => {
     switch (status) {
@@ -17,12 +19,29 @@ const StatusIcon = ({ status }: { status: Assignment['status'] }) => {
         case 'completed':
             return <CheckCheck className="mr-2 h-4 w-4 text-green-500" />;
         default:
-            return <BookCheck className="mr-2 h-4 w-4" />;
+            return null; // 'new' status has no icon next to the button text
     }
 }
 
-export default async function ParentPage() {
-  const assignments = await getAssignments();
+export default function ParentPage() {
+  const { assignments, addAssignment, deleteAssignment, isLoading } = useAssignments();
+
+  const sortedAssignments = [...assignments].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+  if (isLoading) {
+    return (
+        <div className="container mx-auto p-4 md:p-8">
+            <header className="mb-8">
+                <h1 className="text-4xl font-bold font-headline">Parent & Teacher Dashboard</h1>
+                <p className="text-muted-foreground">Create and manage assignments for your little learners.</p>
+            </header>
+            <div className="text-center py-12">
+                <LoaderCircle className="mx-auto h-12 w-12 animate-spin text-primary" />
+                <p className="mt-4">Loading Assignments...</p>
+            </div>
+        </div>
+    )
+  }
 
   return (
     <div className="container mx-auto p-4 md:p-8">
@@ -33,7 +52,7 @@ export default async function ParentPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         <div className="md:col-span-1">
-            <CreateAssignmentForm />
+            <CreateAssignmentForm onCreate={addAssignment} />
         </div>
         <div className="md:col-span-2">
             <Card>
@@ -42,8 +61,8 @@ export default async function ParentPage() {
                         <div>
                             <CardTitle>Current Assignments</CardTitle>
                             <CardDescription>
-                                {assignments.length > 0 
-                                    ? `You have ${assignments.length} assignment(s) active.`
+                                {sortedAssignments.length > 0 
+                                    ? `You have ${sortedAssignments.length} assignment(s) active.`
                                     : "You have no active assignments."}
                             </CardDescription>
                         </div>
@@ -53,9 +72,9 @@ export default async function ParentPage() {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    {assignments.length > 0 ? (
+                    {sortedAssignments.length > 0 ? (
                         <ul className="space-y-4">
-                        {assignments.map((assignment) => (
+                        {sortedAssignments.map((assignment) => (
                             <li key={assignment.id} className="flex items-start justify-between p-4 rounded-lg border bg-card-foreground/5">
                                 <div>
                                     <div className="flex items-center">
@@ -87,7 +106,7 @@ export default async function ParentPage() {
                                             {assignment.status === 'inprogress' ? 'In Progress' : 'Start Quest'}
                                         </QuestLinkButton>
                                     )}
-                                    <DeleteAssignmentButton id={assignment.id} />
+                                    <DeleteAssignmentButton id={assignment.id} onDelete={deleteAssignment} />
                                 </div>
                             </li>
                         ))}

@@ -51,9 +51,10 @@ type HomeworkPalProps = {
   assignmentDescription?: string;
   assignmentId: string;
   starsToAward?: number;
+  onComplete: () => void;
 };
 
-export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, assignmentDescription, assignmentId, starsToAward = 1 }: HomeworkPalProps) {
+export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, assignmentDescription, assignmentId, starsToAward = 1, onComplete }: HomeworkPalProps) {
   const [state, formAction, isFormPending] = useActionState(getHomeworkHelp, initialState);
   const [isTransitioning, startTransition] = useTransition();
   const isPending = isFormPending || isTransitioning;
@@ -136,6 +137,7 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
 
       if (state.stage === 'REWARD') {
         setIsComplete(true);
+        onComplete();
       }
       
       if ("audio" in state && state.audio && audioRef.current) {
@@ -145,7 +147,7 @@ export function HomeworkPal({ initialMessage, initialAudio, assignmentTitle, ass
     }
     
     formRef.current?.reset();
-  }, [state, toast]);
+  }, [state, toast, onComplete]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
